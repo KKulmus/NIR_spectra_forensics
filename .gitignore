@@ -1,0 +1,28 @@
+# Raw and processed (use raw and code to reproduce) Data
+# Kranenburg et al. - reproduced via DOI download
+/dataset/datafiles_raw/
+/dataset/datafiles_averaged_per_sample/
+# own
+/dataset/datafiles_avg/ 
+*.parquet
+# since the .zip-folder from Kranenburg et al. is needed for reproducing the project,
+# and metadata is inside, it is not provided on git
+/dataset/metadata.xlsx
+/Literature/
+/figs/
+/pretests/
+ 
+
+# Python intern
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# prophylactic
+desktop.ini
+Thumbs.db
+*.DS_Store
+
+# Editor savings
+.idea/ 
