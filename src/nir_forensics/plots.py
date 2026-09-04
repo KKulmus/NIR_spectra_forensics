@@ -1,9 +1,9 @@
 #PlotSpectra
 
 import matplotlib.pyplot as plt
-from dataView import ReadData
+from nir_forensics.dataView import ReadData
 import pandas as pd
-from preprocessing import snv, savgol
+from nir_forensics.preprocessing import snv, savgol
 from pathlib import Path
 
 class PlotSpectra():

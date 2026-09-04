@@ -1,5 +1,5 @@
 import pandas as pd
-from preprocessing import snv, savgol, mean_centering
+from nir_forensics.preprocessing import snv, savgol, mean_centering
 
 class PreprocessingPipeline():
     """Prepares the data for the Machine Learning Pipeline

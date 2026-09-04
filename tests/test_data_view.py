@@ -1,5 +1,7 @@
 import unittest
-from dataView import ReadData
+
+
+from nir_forensics.dataView import ReadData
 import numpy as np
 
 class TestNormalizeCode(unittest.TestCase):

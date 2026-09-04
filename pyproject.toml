@@ -1,0 +1,20 @@
+[project]
+name = "NIR_spectra_forensics"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = ["pandas", "numpy",  "matplotlib", "openpyxl", "fastparquet"]
+
+
+#[project.scripts]
+#Definiert ausführbare Befehle meiner Anwendung
+#nimmt nur importierbare Funktionen, ein module reicht nicht "module.submodule:function"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+
+

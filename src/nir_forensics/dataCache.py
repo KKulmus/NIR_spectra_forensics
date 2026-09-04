@@ -6,7 +6,7 @@ Aufruf:  python dataCache.py         (oder import + build_all())
 """
 from pathlib import Path
 import pandas as pd
-from dataView import ReadData
+from nir_forensics.dataView import ReadData
 
 RAW_DIR  = Path("dataset/datafiles_raw")
 AVG_DIR  = Path("dataset/datafiles_avg")

@@ -1,5 +1,5 @@
 from scipy.signal import savgol_filter
-from dataView import ReadData
+from nir_forensics.dataView import ReadData
 import pandas as pd
 import numpy as np
 from numpy import interp

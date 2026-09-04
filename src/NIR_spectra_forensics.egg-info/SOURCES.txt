@@ -1,0 +1,15 @@
+README.md
+pyproject.toml
+src/NIR_spectra_forensics.egg-info/PKG-INFO
+src/NIR_spectra_forensics.egg-info/SOURCES.txt
+src/NIR_spectra_forensics.egg-info/dependency_links.txt
+src/NIR_spectra_forensics.egg-info/requires.txt
+src/NIR_spectra_forensics.egg-info/top_level.txt
+src/nir_forensics/__init__.py
+src/nir_forensics/dataCache.py
+src/nir_forensics/dataView.py
+src/nir_forensics/plots.py
+src/nir_forensics/preprocessing.py
+src/nir_forensics/preprocessingPipeline.py
+src/nir_forensics/read_metadata.py
+tests/test.py

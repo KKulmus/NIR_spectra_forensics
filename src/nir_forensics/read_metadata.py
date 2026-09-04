@@ -1,6 +1,6 @@
 import pandas as pd
 pd.set_option('display.max_rows', None)
-df = pd.read_excel("dataset/metadata.xlsx")
+df = pd.read_excel("../dataset/metadata.xlsx")
 out = df.groupby('type').size()
 out = out.sort_values(ascending = False)
 print(out)
