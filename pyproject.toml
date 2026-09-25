@@ -13,6 +13,8 @@ dependencies = ["pandas", "numpy",  "matplotlib", "openpyxl", "fastparquet"]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
+# src-layout with real package (Variant B): package prefix makes module origin
+# explicit and prevents name collisions with third-party packages
 [tool.setuptools.packages.find]
 where = ["src"]
 

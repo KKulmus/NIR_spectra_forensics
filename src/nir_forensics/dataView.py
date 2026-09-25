@@ -1,17 +1,19 @@
 import pandas as pd
 from pathlib import Path
-import re
 import numpy as np
+from nir_forensics.paths import PROJECT_ROOT
 
 class ReadData():
     """Loads one spectral-file once; provides samples and inventory.
     """
     _CACHE: dict = {} # filename -> ReadData
-    def __init__(self, filename: str, path = "dataset/datafiles_raw/"):
+    def __init__(self, filename: str, path):
         self.filename = filename
         self.instrument = filename.split("_")[1].split(".")[0].lower()
         self.probe = filename.split("_")[0] #Type of the samples, e.g. PAM (Police Amsterdam powdered casework samples)
-        self.path = path
+        PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+        self.path= PROJECT_ROOT / "dataset" / "datafiles_raw"
         self.df = pd.read_excel(Path(self.path)/self.filename) 
         self.wl = self.df.columns[1:].astype(float).values # catch grid
         # SCiO exports %Reflected light; all other instruments export absorbance units.
@@ -21,7 +23,10 @@ class ReadData():
         
 
     @classmethod
-    def load(cls, filename, path="dataset/datafiles_raw/"):
+    def load(cls, filename, path=None):
+        if path is None:
+            path = PROJECT_ROOT / "dataset" / "datafiles_raw"
+            
         if filename not in cls._CACHE:
             cls._CACHE[filename] = cls(filename, path)
         return cls._CACHE[filename]

@@ -3,6 +3,8 @@ import unittest
 
 from nir_forensics.dataView import ReadData
 import numpy as np
+import pandas as pd
+from nir_forensics.dataCache import load_avg
 
 class TestNormalizeCode(unittest.TestCase):
 
@@ -45,7 +47,23 @@ class TestNormalizeCode(unittest.TestCase):
         vals = sample[rd.spectral_cols]
         self.assertTrue(vals.dtypes.map(lambda d: np.issubdtype(d, np.floating)).all())
 
-
+class TestAvgCache(unittest.TestCase):
+    
+    @classmethod
+    def setUpClass(cls):
+        """Load data ONCE for all Tests"""
+        cls.rd_t = ReadData.load("T_Scio.xlsx")
+        cls.avg_file_t101 = cls.rd_t.get_avg_spectrum("T101")
+          
+        
+    def test_compare_liveAvg_cacheAvg(self):
+        """AVG for Scio: live-vs. Cache -> exists cache? is it equal to live?"""
+        cache_avg = load_avg(self.rd_t).loc["T101"]
+        pd.testing.assert_series_equal(cache_avg, self.avg_file_t101, check_names = False)
+            
+        
+        
+        
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

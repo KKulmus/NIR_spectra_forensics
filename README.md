@@ -35,6 +35,17 @@ SCiO|740-1070|331|n.a.|
 
 **Gesamt: 430 Proben**, verteilt auf 5 Instrumente bzw. 24 Spektraldateien
 
+### Anmerkungen
+
+PAM000 ist Referenzmessung
+
+SCiO-Rohdaten sind in Reflexion gemssen, werden im Loader gemäß Lambert-Beer transformiert
+
+T150: ist kein Tippfehler von T120, Ranking legt als Top_Kanditat T32 (0.74) nahe. 
+T150 ist nicht in den Metadaten aufgeführt: unidentifizierte Messung (farbdominiert?)
+
+
+
 
 
 
