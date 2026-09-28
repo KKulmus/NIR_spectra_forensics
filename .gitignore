@@ -9,7 +9,7 @@
 # and metadata is inside, it is not provided on git
 /dataset/metadata.xlsx
 /Literature/
-/figs/
+#/figs/
 /pretests/
  
 

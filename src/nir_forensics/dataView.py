@@ -7,7 +7,7 @@ class ReadData():
     """Loads one spectral-file once; provides samples and inventory.
     """
     _CACHE: dict = {} # filename -> ReadData
-    def __init__(self, filename: str, path):
+    def __init__(self, filename: str, path=None):
         self.filename = filename
         self.instrument = filename.split("_")[1].split(".")[0].lower()
         self.probe = filename.split("_")[0] #Type of the samples, e.g. PAM (Police Amsterdam powdered casework samples)
@@ -61,7 +61,9 @@ class ReadData():
     
     def _prepare_codes(self):
         """Vectorized: normalize all codes once, store as column 'code_norm'."""
-        self.spectral_cols = self.df.columns[1:].tolist()   # INVARIANT position
+        new_cols = [self.df.columns[0]] + pd.to_numeric(self.df.columns[1:]).tolist()
+        self.df.columns = new_cols
+        self.spectral_cols = self.df.columns[1:].tolist()
         codes = self.df.iloc[:, 0].astype(str).str.strip()
         letters = codes.str.extract(r"([A-Za-z]+)")[0]
         digits  = codes.str.extract(r"(\d+)")[0]

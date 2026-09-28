@@ -96,7 +96,7 @@ def compare_devices(filenames: list, sample_id: str, apply_snv = False,
     for name in filenames:
         rd = ReadData(name, sample_id)
         df = rd.get_sample()
-        wavelengths = df.wl.astype(float)
+        wavelengths = rd.wl.astype(float)
         spectrum = df.sprectral_cols.astype(float)
         if apply_snv:
             spectrum = snv(spectrum)
@@ -135,7 +135,7 @@ def compare_devices(filenames: list, sample_id: str, apply_snv = False,
 def compare_samples(metadata_filename: str,  path_metadata: str, samples_by_file: dict, apply_snv = False,
                     apply_deriv: int = 0,  # 0 = none, 1 = first derivative, 2 = second
                     window: int = 11) -> plt.Axes:
-    """ Takes a sample from different files and compares spectra from different sampe_id graphically
+    """ Takes a sample from different files and compares spectra from different sample_id graphically
         #Therefore for each sample a new instance of the class (PlotData) is needed
         
         Args:
@@ -153,10 +153,10 @@ def compare_samples(metadata_filename: str,  path_metadata: str, samples_by_file
     fig, ax = plt.subplots(figsize = (10,6))
     for filename, ids in samples_by_file.items():
         for sample in ids:
-            rd = ReadData(filename, sample)
-            df = rd.get_sample()
-            wavelengths = df.wl.astype(float)
-            spectrum = df.sprectral_cols.astype(float)
+            rd = ReadData.load(filename)
+            #df = rd.get_sample(sample)
+            wavelengths = rd.wl.astype(float)
+            spectrum = rd.get_avg_spectrum(sample)#df[rd.spectral_cols].astype(float)
             if apply_snv:
                 spectrum = snv(spectrum)
                 
