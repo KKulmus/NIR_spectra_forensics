@@ -17,7 +17,7 @@ jobs: #what to do
          uses: actions/checkout@v4 #fetch code from repo to virtual machine
          
       -  name: Set up Python 3.13 #predefined
-         uses: action/setup-python@v5 #install python 3.13 - same version as local
+         uses: actions/setup-python@v5 #install python 3.13 - same version as local
          with:
            python-version:  "3.13"
            
