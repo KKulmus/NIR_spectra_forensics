@@ -28,10 +28,12 @@ class ReadData():
     def load(cls, filename, path=None):
         if path is None:
             path = PROJECT_ROOT / "dataset" / "datafiles_raw"
-            
-        if filename not in cls._CACHE:
-            cls._CACHE[filename] = cls(filename, path)
-        return cls._CACHE[filename]
+        path = Path(path).resolve()                 # Pfad normalisieren
+    
+        key = (filename, path)                      # Ein Schlüssel, eine Quelle
+        if key not in cls._CACHE:
+            cls._CACHE[key] = cls(filename, path)
+        return cls._CACHE[key]
         
         
     def read_excel_as_df(self):
