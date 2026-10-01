@@ -1,0 +1,30 @@
+#Definines for tests: if X then do Y
+#the code is tested if sth. is uploaded to any branch and if so. asks a pull request
+
+
+name:  Tests
+
+on: #when to run, entry of trigger definition
+  push: #first trigger: every push triggers
+  pull_request: #second trigger: merge to main as PR
+    branches:  [main]
+    
+jobs: #what to do
+  run-tests: #name, can be chosen freely
+    runs-on:  ubuntu-latest  #computer on which the assitent work. standart ubuntu-lastest (current Linux, free of charge, compatibil)
+    steps: #ordered to-do list for the job - one step after the other
+      -  name: Check out repository #use predefined action from gitHub (uses)
+         uses: actions/checkout@v4 #fetch code from repo to virtual machine
+         
+      -  name: Set up Python 3.13 #predefined
+         uses: action/setup-python@v5 #install python 3.13 - same version as local
+         with:
+           python-version:  "3.13"
+           
+      -  name: Install package #own instruction (run)
+         run:  pip install -e  . #reads pyproject.toml, installs nir_forensics "." - current path
+         
+      -  name: Run tests
+         run:  python -m unittest discover -s tests -v # run the unittests
+    
+
