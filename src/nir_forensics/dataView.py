@@ -12,8 +12,10 @@ class ReadData():
         self.instrument = filename.split("_")[1].split(".")[0].lower()
         self.probe = filename.split("_")[0] #Type of the samples, e.g. PAM (Police Amsterdam powdered casework samples)
         PROJECT_ROOT = Path(__file__).resolve().parents[2]
-
-        self.path= PROJECT_ROOT / "dataset" / "datafiles_raw"
+        if path is None:
+            self.path= PROJECT_ROOT / "dataset" / "datafiles_raw"
+        else:
+            self.path = path
         self.df = pd.read_excel(Path(self.path)/self.filename) 
         self.wl = self.df.columns[1:].astype(float).values # catch grid
         # SCiO exports %Reflected light; all other instruments export absorbance units.

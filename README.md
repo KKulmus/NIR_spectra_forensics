@@ -60,10 +60,10 @@ A **total of 430 samples**have been analysed, divided between five instruments o
 
 ### 3.1 SCiO reflectance transform 
 The SCiO-raw data are measured in reflectance; consequently, they are transformed 
-to the corresponding absorption values using the Lambert-Beer formula. The 
-Lambert-Beer formula is the formula for the calculation of the 
-negative logarithm of reflected intensity relative to white reference.
-Kranenburg et al. employed a similar methodology. The following details are 
+to the corresponding absorption values using the negative natural-logathim. 
+ln-transformation: used methods are invariant against linear scaling.
+Kranenburg et al. employed a similar methodology, but didn't state whether they use
+-log10 or -ln. The following details are 
 provided in order to serve as background information for the SCiO. The PAM000 
 data is identified below. It is not stated in the data paper whether the 
 background has been subtracted. As a consequence of the implementation of a 
