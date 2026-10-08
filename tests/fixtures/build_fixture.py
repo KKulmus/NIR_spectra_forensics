@@ -4,6 +4,27 @@
 Created on Thu Oct  1 08:48:54 2026
 
 @author: kathrin
+
+# --- Fixture code design -----------------------------------------------------
+# Each code in this fixture exists to cover a specific test case in
+# test_data_view.py (TestLoaderFixture). The fixture is NOT a subset of the
+r# real dataset -- it is test coverage design:
+#
+#   Code             Rows   Test purpose
+#   T0, T10, T150    1 ea.  plain codes survive normalization unchanged
+#                          (increasing digit counts)
+#   T101             2      replicate collapse (get_available_samples) and
+#                          replicate averaging (get_avg_spectrum)
+#   PAM001           1      leading zeros are stripped (PAM001 -> PAM1)
+#   PAM000           1      zero-only digits must not vanish (PAM000 -> PAM0)
+#
+# A PAM code in a "T_" file is intentional: _prepare_codes() ignores the
+# file-prefix convention, so both normalization edge cases ride along in a
+# single fixture. Values are synthetic (seed 42), 0.65 < R < 0.75, safe for
+# the -log reflectance transform.
+# -----------------------------------------------------------------------------
+
+
 """
 
 import pandas as pd

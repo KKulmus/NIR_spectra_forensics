@@ -68,7 +68,7 @@ class TestAvgCache(unittest.TestCase):
         
     def test_compare_liveAvg_cacheAvg(self):
         """AVG for Scio: live-vs. Cache -> exists cache? is it equal to live?"""
-        cache_avg = load_avg(self.rd_t).loc["T101"]
+        cache_avg = load_avg(self.rd_t, "Scio").loc["T101"]
         pd.testing.assert_series_equal(cache_avg, self.avg_file_t101, check_names = False)
             
         
@@ -106,6 +106,14 @@ class TestLoaderFixture(unittest.TestCase):
         self.assertIn("PAM001", actual_keys,
                       msg=f"'PAM001' not in code-column! Available Keys: {actual_keys[:15]}...")
         self.assertEqual(m["PAM001"], "PAM1")
+
+    def test_get_sample_with_normalized_code(self):
+        """Critical: get_sample must accept normalized codes (PAM1, not PAM001)."""
+        sample = self.rd_t.get_sample("PAM1")  # ← normierter Code, nicht "PAM001"
+        self.assertIsNotNone(sample)
+        self.assertGreaterEqual(len(sample), 1)  # Mindestens eine Zeile gefunden
+        self.assertRaises(ValueError,self.rd_t.get_sample, "PAM001")
+        
 
     def test_zero_only_digits_do_not_vanish(self):
         """PAM000 -> PAM0: '0' may not get lost."""

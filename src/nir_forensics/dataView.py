@@ -41,11 +41,12 @@ class ReadData():
 
 
     def get_sample(self, code: str) -> pd.DataFrame:
-        sub = self.df[self.df.iloc[:, 0] == code].copy()
+        #sub = self.df[self.df.iloc[:, 0] == code].copy()
+        sub = self.df[self.df["code_norm"] == code].copy()
         if len(sub) == 0:
             raise ValueError(f"Sample {code} not in {self.filename}")
         vals = sub[self.spectral_cols].astype(float)
-        if (vals <= 0).any().any():
+        if (vals <= 0).any().any() and self.is_reflectance:
             raise ValueError(f"Non-positive reflectance in {self.filename}, sample {code}: "
                      f"-np.log would fail. Check raw data for this scan.")
         sub[self.spectral_cols] = -np.log(vals) if self.is_reflectance else vals
