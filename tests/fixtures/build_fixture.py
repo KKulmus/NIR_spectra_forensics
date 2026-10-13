@@ -94,5 +94,5 @@ save_path_metadata = Path(__file__).parent / "metadata.xlsx"
 df_meta.to_excel(save_path_metadata, index=False)
 print(f"Meta-fixture written to {save_path_metadata}")
 
-pd.read_parquet(save_path_parquet)
+
 

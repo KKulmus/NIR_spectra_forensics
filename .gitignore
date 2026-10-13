@@ -5,7 +5,7 @@
 # own
 /dataset/datafiles_avg/ 
 /dataset
-#*.parquet
+
 # since the .zip-folder from Kranenburg et al. is needed for reproducing the project,
 # and metadata is inside, it is not provided on git
 /dataset/metadata.xlsx
