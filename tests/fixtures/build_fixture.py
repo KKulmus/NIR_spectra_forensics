@@ -5,7 +5,7 @@ Created on Thu Oct  1 08:48:54 2026
 
 @author: kathrin
 
-# --- Fixture code design -----------------------------------------------------
+# --- Fixture code design (dataview)-----------------------------------------------------
 # Each code in this fixture exists to cover a specific test case in
 # test_data_view.py (TestLoaderFixture). The fixture is NOT a subset of the
 r# real dataset -- it is test coverage design:
@@ -47,5 +47,52 @@ save_path = Path(__file__).parent / "T_Scio_fixture.xlsx"
 df.to_excel(save_path, index=False)
 print(f"Fixture written to {save_path}")
 
-df_excel =  pd.read_excel(save_path)
+# --- Fixture code design (dataset.py) -----------------------------------------------------
+# Each code in this fixture exists to cover a specific test case in
+# test_dataset.py (TestLoaderFixture). The fixture is NOT a subset of the
+# real dataset -- it is test coverage design:
+#
+#Parquet:
+#   Code                Test purpose
+#   T1, T2, P1, PAM7    plain codes: joining on metadata is fine 
+#   X12                 code not in metadata: missing-path
+#   
+#Excel:
+#   metadata.xlsx : 
+#                       Test Purpose                                
+#   T1, T2, PAM7        joining works as it should, expected rows-check
+#   with type-values    
+#   P1                  test validate 1:1   
+#   without type
+#
+# -----------------------------------------------------------------------------
+
+
+
+
+wl5 = np.linspace(740, 750, 5)
+spectral_data5 = 0.05*np.sin(np.random.randn(5,5)) + 0.7
+
+#T1, T2, P1, PAM7, X12
+
+wl5 = [float(i) for i in wl5]
+df = pd.DataFrame(spectral_data5, columns = wl5)
+df.insert(0, 'code', ['T1', 'T2', 'P1', 'PAM7', 'X12'])
+df = df.set_index("code")
+print(df.head())
+
+
+save_path_parquet = Path(__file__).parent / "X_MicroNIR_avg.parquet"
+df.to_parquet(save_path_parquet)
+print(f"Fixture written to {save_path_parquet}")
+
+metadata_dict = {'code' : ['T1', 'T2', 'P1', 'PAM7'],        
+                 'type' : ['other', 'cocaine', '','cocaine']}
+
+df_meta = pd.DataFrame(metadata_dict)
+save_path_metadata = Path(__file__).parent / "metadata.xlsx"
+df_meta.to_excel(save_path_metadata, index=False)
+print(f"Meta-fixture written to {save_path_metadata}")
+
+pd.read_parquet(save_path_parquet)
 
