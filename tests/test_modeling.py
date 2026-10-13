@@ -18,7 +18,7 @@ from nir_forensics.modeling.dataset import build_modeling_dataset
 
 
 
-class TestNormalizeCode(unittest.TestCase):
+class TestModelingData(unittest.TestCase):
 
     def test_invalid_instrument(self):
         """Instrument = foo: raise valueError"""
@@ -55,12 +55,17 @@ class TestNormalizeCode(unittest.TestCase):
                                     avg_dir = FIXTURE_DIR,
                                     expected_rows = {"MicroNIR":4})
         df_parquet = pd.read_parquet(FIXTURE_DIR / "X_MicroNIR_avg.parquet")
-        pam7Val = df_parquet.loc["PAM7", 740.0]
+        self.assertIn(740.0, df_parquet.columns,                                  # <- Türwache
+                 msg=f"Fixture-Vertrag verletzt: Spalten sind {df_parquet.columns.tolist()} "
+                     f"(Typ: {type(df_parquet.columns[0]).__name__})")
+
+        
         self.assertEqual(df.shape,(4,7))
         self.assertNotIn("X12", df["code"].tolist())
         self.assertEqual(list(df[df["code"]=="T1"]["type"])[0],"other")
         
-        self.assertAlmostEqual(list(df.loc[df["code"]=="PAM7", 740.0])[0],pam7Val, delta=1e-12)
+        self.assertAlmostEqual(list(df.loc[df["code"]=="PAM7", 740.0])[0],
+                               df_parquet.loc["PAM7", 740.0], delta=1e-12)
        
         
          
