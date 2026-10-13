@@ -59,6 +59,7 @@ def build_modeling_dataset(instrument,
         df = pd.read_parquet(f)
         dataframes.extend([df])
     dataframes = pd.concat(dataframes)
+    dataframes.columns = pd.to_numeric(dataframes.columns)
     joined = pd.merge(df_meta,dataframes,  right_index = True,left_on="code", how="inner", validate = "1:1")
     results = dataframes.index.to_list()
     missing = set(results) - set(joined["code"])
