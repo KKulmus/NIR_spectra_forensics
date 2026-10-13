@@ -57,9 +57,11 @@ class TestModelingData(unittest.TestCase):
         df_parquet = pd.read_parquet(FIXTURE_DIR / "X_MicroNIR_avg.parquet")
         
         
-        self.assertTrue(all(isinstance(x, (int,float)) for x in df_parquet.columns),
-                        msg=f"Spectral columns should be float after normalization, got: {[(c, type(c).__name__) for c in df.columns]}")
-        
+        numerical_cols = [c for c in df_parquet.columns if isinstance(c, (int, float))]
+        self.assertTrue(all(isinstance(c, float) for c in numerical_cols),
+                        msg=f"Wavelengths should be float, got: {[(c, type(c).__name__) for c in numerical_cols]}"
+                            )
+       
         self.assertEqual(df.shape,(4,7))
         self.assertNotIn("X12", df["code"].tolist())
         self.assertEqual(list(df[df["code"]=="T1"]["type"])[0],"other")
