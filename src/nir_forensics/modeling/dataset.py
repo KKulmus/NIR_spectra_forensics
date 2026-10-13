@@ -47,7 +47,7 @@ def build_modeling_dataset(instrument,
     instrument = instrument.upper()
     mapping_dict = {"MICRONIR" : "MicroNIR", "ASD":"ASD", "NEOSPECTRA": "NeoSpectra", "SCIO": "Scio", "NIRONE":"NIRONE"}
     if instrument not in list(mapping_dict.keys()):
-        raise ValueError(f"Unknown {instrument} Perhaps typo?")
+        raise ValueError(f"Unknown {instrument} Perhaps a typo?")
     else:
         instrument = mapping_dict[instrument]
     df_meta = pd.read_excel(metadata_path)
@@ -67,5 +67,5 @@ def build_modeling_dataset(instrument,
         warnings.warn(f"Warning: {len(missing)} spectra without metadata: {missing}")
     if len(joined) !=expected_rows[instrument]:
         raise ValueError(f"Merging failed: for {instrument}, {expected_rows[instrument]} are expected, joined has {len(joined)} rows")
-    df = pd.DataFrame(joined)
-    return df
+    
+    return joined

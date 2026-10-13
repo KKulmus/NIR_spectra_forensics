@@ -44,7 +44,7 @@ class TestModelingData(unittest.TestCase):
                                     expected_rows = {"MicroNIR":4})
     def test_expected_rows(self):
         """expected rows and returned rows are not equal: raise ValueError"""
-        self.assertRaises(ValueError, build_modeling_dataset,instrument = "Scio",
+        self.assertRaises(ValueError, build_modeling_dataset,instrument = "MicroNIR",
                                     metadata_path = FIXTURE_DIR / "metadata.xlsx",
                                     avg_dir = FIXTURE_DIR,
                                     expected_rows = {"MicroNIR":14})
@@ -55,6 +55,7 @@ class TestModelingData(unittest.TestCase):
                                     avg_dir = FIXTURE_DIR,
                                     expected_rows = {"MicroNIR":4})
         df_parquet = pd.read_parquet(FIXTURE_DIR / "X_MicroNIR_avg.parquet")
+        df_parquet.columns = pd.to_numeric(df_parquet.columns)
         
         
         numerical_cols = [c for c in df_parquet.columns if isinstance(c, (int, float))]
