@@ -38,10 +38,18 @@ class TestModelingData(unittest.TestCase):
         
     def test_missing(self):
         """no metadata for a spectrum: warnings.warn"""
-        self.assertWarns(Warning, build_modeling_dataset,instrument = "MicroNIR",
-                                    metadata_path = FIXTURE_DIR / "metadata.xlsx",
-                                    avg_dir = FIXTURE_DIR,
-                                    expected_rows = {"MicroNIR":4})
+        # self.assertWarns(Warning, build_modeling_dataset,instrument = "MicroNIR",
+        #                             metadata_path = FIXTURE_DIR / "metadata.xlsx",
+        #                             avg_dir = FIXTURE_DIR,
+        #                             expected_rows = {"MicroNIR":4})
+        with self.assertWarnsRegex(
+            UserWarning,
+            r"spectra without metadata: {'X12'}" # The regex to match the message
+        ):
+            build_modeling_dataset(instrument = "MicroNIR",
+                                         metadata_path = FIXTURE_DIR / "metadata.xlsx",
+                                         avg_dir = FIXTURE_DIR,
+                                         expected_rows = {"MicroNIR":4})
     def test_expected_rows(self):
         """expected rows and returned rows are not equal: raise ValueError"""
         self.assertRaises(ValueError, build_modeling_dataset,instrument = "MicroNIR",
@@ -54,6 +62,7 @@ class TestModelingData(unittest.TestCase):
                                     metadata_path = FIXTURE_DIR / "metadata.xlsx",
                                     avg_dir = FIXTURE_DIR,
                                     expected_rows = {"MicroNIR":4})
+        
         df_parquet = pd.read_parquet(FIXTURE_DIR / "X_MicroNIR_avg.parquet")
         df_parquet.columns = pd.to_numeric(df_parquet.columns)
         
@@ -63,7 +72,7 @@ class TestModelingData(unittest.TestCase):
                         msg=f"Wavelengths should be float, got: {[(c, type(c).__name__) for c in numerical_cols]}"
                             )
        
-        self.assertEqual(df.shape,(4,7))
+        self.assertEqual(df.shape,(4,10))
         self.assertNotIn("X12", df["code"].tolist())
         self.assertEqual(list(df[df["code"]=="T1"]["type"])[0],"other")
         
@@ -71,6 +80,27 @@ class TestModelingData(unittest.TestCase):
                                df_parquet.loc["PAM7", 740.0], delta=1e-12)
        
         
-         
+    def test_column_group(self):
+        """Test whether column group is added"""
+        df = build_modeling_dataset(instrument = "MicroNIR",
+                                    metadata_path = FIXTURE_DIR / "metadata.xlsx",
+                                    avg_dir = FIXTURE_DIR,
+                                    expected_rows = {"MicroNIR":4})
+
+        column_list = df.columns.tolist()
+        self.assertIn("group", column_list)
+        
+    def test_group_assignement(self):
+        """Group assignement okay? T1 -> E1"""
+        df = build_modeling_dataset(instrument = "MicroNIR",
+                                    metadata_path = FIXTURE_DIR / "metadata.xlsx",
+                                    avg_dir = FIXTURE_DIR,
+                                    expected_rows = {"MicroNIR":4})
+
+        expected_groups = ['E1', 'E2', 'E1', 'PAM7']
+        expected_codes = ['T1', 'T2', 'P1', 'PAM7']
+        self.assertEqual(df["group"].tolist(), expected_groups)
+        self.assertEqual(df["code"].tolist(), expected_codes)
+
          
  

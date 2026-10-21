@@ -87,7 +87,10 @@ df.to_parquet(save_path_parquet)
 print(f"Fixture written to {save_path_parquet}")
 
 metadata_dict = {'code' : ['T1', 'T2', 'P1', 'PAM7'],        
-                 'type' : ['other', 'cocaine', '','cocaine']}
+                 'type' : ['other', 'cocaine', '','cocaine'],
+                 'set' : ['T', 'T', 'P', 'PAM'],
+                 'nr' :['1', '2', '1', '7']
+                 }
 
 df_meta = pd.DataFrame(metadata_dict)
 save_path_metadata = Path(__file__).parent / "metadata.xlsx"

@@ -9,7 +9,7 @@ Created on Fri Oct  9 10:09:52 2026
 import pandas as pd
 from nir_forensics.paths import PROJECT_ROOT
 import warnings
-
+from nir_forensics.modeling.groups import get_codes
 
 AVG_DIR = PROJECT_ROOT / "dataset" / "datafiles_avg"
 
@@ -61,11 +61,12 @@ def build_modeling_dataset(instrument,
     dataframes = pd.concat(dataframes)
     dataframes.columns = pd.to_numeric(dataframes.columns)
     joined = pd.merge(df_meta,dataframes,  right_index = True,left_on="code", how="inner", validate = "1:1")
+    print(joined.columns.tolist())
     results = dataframes.index.to_list()
     missing = set(results) - set(joined["code"])
     if missing:
-        warnings.warn(f"Warning: {len(missing)} spectra without metadata: {missing}")
+        warnings.warn(f"Warning: {len(missing)} spectra without metadata: {missing}", UserWarning)
     if len(joined) !=expected_rows[instrument]:
         raise ValueError(f"Merging failed: for {instrument}, {expected_rows[instrument]} are expected, joined has {len(joined)} rows")
-    
-    return joined
+    joined_with_group = get_codes(joined)
+    return joined_with_group

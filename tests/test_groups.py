@@ -99,7 +99,6 @@ class TestGroups(unittest.TestCase):
         """get_codes(empty_DataFrame) returns empty DataFrame with new column group """
         df_code_empty = get_codes(df_empty)
         df_res = df_empty.copy()
-        #df_res.insert(len(df_res.columns), "group", [], dtype = object)
         df_res["group"] = []
         df_res["group"] = df_res["group"].astype(object)
         assert_frame_equal(df_code_empty, df_res)
