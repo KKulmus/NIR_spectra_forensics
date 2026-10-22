@@ -101,6 +101,4 @@ class TestModelingData(unittest.TestCase):
         expected_codes = ['T1', 'T2', 'P1', 'PAM7']
         self.assertEqual(df["group"].tolist(), expected_groups)
         self.assertEqual(df["code"].tolist(), expected_codes)
-
-         
- 
+        

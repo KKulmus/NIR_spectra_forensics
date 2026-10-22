@@ -30,3 +30,24 @@ def split_dataset(dataset: pd.DataFrame, n_splits = 1, test_size = 0.2, random_s
     test_data = dataset.iloc[test_index]
     
     return train_data, test_data
+
+def split_features_target(trainset: pd.DataFrame, testset: pd.DataFrame, target = "type"):
+    """Separates target and features in given trainset and testset 
+        Args: 
+            trainset (pd.DataFrame) : Dataset for training
+            testset (pd.DataFrame) : Dataset for testing
+            target (str) : target column in train- and testset, defaults to type
+        Returns:
+            Tuple with four entries: train_features, train_target, test_features, test_target
+    """
+    if target not in trainset.columns.tolist():
+        raise ValueError(f"{target} is no column name of trainset. Typo?")
+    if target not in testset.columns.tolist():
+        raise ValueError(f"{target} is no column name of testset. Typo?")
+    train_features = trainset.drop([target,"group"], axis = 1)
+    test_features = testset.drop([target,"group"], axis = 1)
+
+    train_target = trainset[target]
+    test_target = testset[target]
+    
+    return train_features, train_target, test_features, test_target
