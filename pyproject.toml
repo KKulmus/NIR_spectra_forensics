@@ -2,7 +2,7 @@
 name = "NIR_spectra_forensics"
 version = "0.1.0"
 requires-python = ">=3.12"
-dependencies = ["pandas", "numpy",  "matplotlib", "openpyxl", "fastparquet", "scikit-learn"]
+dependencies = ["pandas==2.3.3", "numpy",  "matplotlib", "openpyxl", "fastparquet", "scikit-learn"]
 
 
 #[project.scripts]
