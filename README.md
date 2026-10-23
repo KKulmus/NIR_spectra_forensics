@@ -166,6 +166,28 @@ negative absorbance values were found in 27 averaged samples across
  **Table 3** Negative Absorbance: (Occurs only within MicroNIR): 
  Samlpe-Code, Minimal and Maximal wavelength with negative values and
  respective absorbance values 
+ 
+### 3.5 NeoSpectra: Wavelength grid consistency
+
+During data quality inspection, the NeoSpectra modelling dataset contained 312 
+spectral columns instead of the expected 160, with 65,208 missing spectral values. 
+Investigation revealed that the raw files use nominally identical wavelength grids 
+whose floating-point representations differ slightly. The maximum observed deviation 
+between the compared grids was approximately ($4.1 \times 10^{-12}$) nm.
+
+When spectra from different sample sets were combined, these tiny numerical 
+differences caused nominally identical wavelengths to be treated as separate columns. 
+Consequently, the resulting dataset contained duplicate wavelength positions and missing values.
+
+**Correction:** Wavelength column labels are rounded to eight decimal places when 
+the raw data are loaded. The averaged spectral cache was rebuilt after incrementing 
+the preprocessing version.
+
+**Validation:** After rebuilding the cache, the NeoSpectra modelling dataset 
+contained 429 samples, exactly 160 spectral columns, and no missing spectral values.
+
+This correction standardizes floating-point representations of the wavelength labels; 
+it does not resample or otherwise alter the spectral measurements.
    
 ## 4. Modeling Baseline Designer
 
@@ -201,9 +223,11 @@ via macro-averaged metrics rather than single-sample rare-class predictions.
 
 *Figure 3: Sample Distribution by Substance Class (Meta Data)*
 
-**Implication:** Accuracy is an invalid metric for this task. 
-A majority-class classifier achieves 39.6 % accuracy without any spectral information. 
-We report **Balanced Accuracy** and **macro-F1** instead.
+**Implication:** Accuracy is an unfavorable metric for this task. 
+A majority-class classifier achieves 39.6 % accuracy regarding the metadata 
+without any spectral information. For a specific instrument the class-distribution
+might differ and therfor the majority-class classifier too.
+We report **macro-F1** and **weighted-F1** instead.
 
 
 ||                                  |ASD|  MicroNIR|  NeoSpectra|  Scio|  NIRONE  |Meta Data|
@@ -232,10 +256,17 @@ samples, given in metadata.xlsx are measured.
 |Instrument: MicroNIR|Largest wavelength range outside the 
 ASD benchmark (950–1650 nm); adequate resolution (125 points); 
 non-benchmark instrument avoids confounding model quality with ASD's superior hardware.|
-|Data Level: Averaged Files	| *_Avg_*.xlsx files provide one row per sample (replicates already collapsed). This eliminates leakage risk where training and test sets share replicates of the same physical sample.|
-|Set K Included	Calibration mixture set (88 samples, cocaine 10–100 %). Despite increasing cocaine imbalance (80/8), the K-set adds scientifically valuable variation: How much adulteration can the model tolerate? Excluding it removes an interesting stress test.|
-|Sets T & P Merged	|Tablets (T) and powdered tablets (P) originate from identical material (same code number, same type). They are kept together — both are used, but T/P pairs are never split between train and test.|
-|Excluded Samples|	PAM000 (background/reference scan, no substance) and T150 (no metadata entry) are dropped. All remaining samples have valid type annotations.|
+|Data Level: Averaged Files	| *_Avg_*.xlsx files provide one row per sample 
+(replicates already collapsed). This eliminates leakage risk where training and 
+test sets share replicates of the same physical sample.|
+|Set K Included	Calibration mixture set (88 samples, cocaine 10–100 %). Despite 
+increasing cocaine imbalance (80/8), the K-set adds scientifically valuable variation:
+ How much adulteration can the model tolerate? Excluding it removes an interesting stress test.|
+|Sets T & P Merged	|Tablets (T) and powdered tablets (P) originate from identical
+ material (same code number, same type). They are kept together — both are used,
+  but T/P pairs are never split between train and test.|
+|Excluded Samples|	PAM000 (background/reference scan, no substance) and T150 
+(no metadata entry) are dropped. All remaining samples have valid type annotations.|
 
 **Final Dataset Size:** After filtering for MicroNIR averaged files + 
 valid metadata. PAM000 and T150 occur exclusively in the SCiO dataset 
@@ -251,20 +282,39 @@ to guarantee leakage-free splits.
 
 ### 4.4 Train-Test Split Strategy
 
-**Constraint:** Samples sharing the same physical origin must stay together in the same split.
+**Constraint:** Samples with a shared physical origin must remain in the same split to prevent data leakage.
 
-    - T0 + T0 (replicates) → same fold
-    - T2 + P2 (tablet + powder from same source) → same fold
-    - PAM001 + PAM001 (replicates) → same fold
+**Examples:**
 
-**Implementation:** Group by code_norm before splitting. 
-Then stratify by type within the group constraints.
+    - Replicate measurements of the same sample are averaged before modelling.
+    - Tablets and their corresponding crushed samples (e.g. T2 and P2) are assigned to the same group.
+    - Samples with the same source code are kept together.
 
-**Smote Question:** Synthetic oversampling techniques like SMOTE 
-(Synthetic Minority Over-sampling Technique) exist, but for spectroscopic 
-data they introduce artificial spectral shapes without physical grounding. 
-We defer SMOTE to future iterations; for now, we accept the class imbalance 
-and rely on macro-averaged metrics.
+
+**Group assignment:**
+ The group column is created during dataset preparation. For T/P samples, 
+ the group identifier is based on the sample number, so corresponding tablets 
+ and crushed samples share a group (e.g. T2 and P2 → E2). Other samples are 
+ grouped by their normalized sample code.
+
+**Implementation:** split_dataset() uses scikit-learn's GroupShuffleSplit with 
+the group column. The default test size is 20% of the groups, and random_state=42 
+makes the split reproducible. Groups are kept intact, so samples from the same 
+group cannot appear in both training and test sets.
+
+**Important limitation:**
+ GroupShuffleSplit does not stratify the split by the target variable type. 
+ Therefore, class proportions may differ between training and test sets, and 
+ some classes may be underrepresented or absent in the test set. The resulting 
+ class distribution should be checked before interpreting model metrics.
+
+The current implementation uses the first split returned by GroupShuffleSplit, 
+even if n_splits is set to a value greater than one.
+
+**SMOTE:** Synthetic oversampling techniques such as SMOTE are not used in the 
+current baseline. Their suitability for spectroscopic data would require 
+separate evaluation; class imbalance is initially addressed through appropriate 
+evaluation metrics rather than synthetic samples.
 
 ### Metrics and Baselines
 
@@ -280,19 +330,44 @@ and rely on macro-averaged metrics.
 on 7 other classes = 0 %, average = (1 + 0×7)/8 = 12.5 %). Any real model must
  exceed this threshold meaningfully.
 
-### 4.6 Implementation Steps (Order of Execution)
+### 4.6 Implementation Workflow
 
-   1. Load *_Avg_MicroNIR.xlsx files + metadata.xlsx
-   2. Join on code_norm
-   3. Drop rows without type annotation (PAM000, T150)
-   4. Verify join loss
-   5. Compute final value_counts() by type
-   6. Perform grouped train-test split (by code_norm, stratified by type)
-   7. Fit DummyClassifier(strategy='most_frequent') → record Balanced Accuracy, macro-F1
-   8. Fit LogisticRegression or PLS-DA → compare against baseline
-   9. Document confusion matrix and per-class performance
+The modelling workflow is organized into the following stages.
 
-**Next Step:** Branch feature/baseline-model, script src/nir_forensics/model_baseline.py, 
-starting with Step 1–6 only. No model fitting until the joined dataframe passes 
-sanity checks (shape, dtype, join losses, type distribution).
+**Stage 1: Data preparation**
+
+1. Load the averaged spectral data for the selected instrument.
+2. Load the sample metadata and join it to the spectral data by sample code.
+3. Validate the join and check the expected number of samples.
+4. Assign sample groups to keep related samples together.
+5. Inspect the target-class distribution and verify that spectral features contain no unexpected missing values.
+
+**Stage 2: Train-test split**
+
+1. Split the dataset into training and test sets using GroupShuffleSplit.
+2. Keep all samples belonging to the same group in one split.
+3. Check the class distribution in both sets and identify classes that are absent or underrepresented.
+
+**Stage 3: Baseline evaluation**
+
+1. Separate the target variable (type) from the spectral features.
+2. Fit a DummyClassifier as a reference baseline.
+3. Evaluate the baseline using Macro-F1 and Weighted-F1.
+4. Inspect per-class results and the confusion matrix where appropriate.
+
+**Stage 4: Model development**
+
+1. Establish a reproducible evaluation procedure before comparing more complex models.
+2. Train candidate classifiers using the same data split and evaluation metrics.
+3. Compare each model with the baseline, including its performance on minority classes.
+4. Record the configuration, metrics, and relevant limitations of each experiment.
+
+**Current implementation status:** Dataset construction, group assignment, 
+grouped train-test splitting, feature-target separation, and a DummyClassifier 
+baseline are implemented and covered by tests. The baseline is a reference point, 
+not evidence that the spectra contain useful discriminatory information.
+
+**Next steps:** Validate the baseline results on the selected instrument, 
+review the class distribution in the split, and establish the evaluation procedure 
+before implementing and comparing more complex classifiers.
 

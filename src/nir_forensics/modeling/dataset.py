@@ -13,7 +13,7 @@ from nir_forensics.modeling.groups import get_codes
 
 AVG_DIR = PROJECT_ROOT / "dataset" / "datafiles_avg"
 
-EXPECTED_ROWS = {"MicroNIR": 429, "ASD" : 389 , "NeoSpectra":429  ,"Scio":417 , "NIRONE":341 }
+EXPECTED_ROWS = {"MicroNIR": 429, "ASD" : 389 , "NeoSpectra" : 429  ,"Scio" : 417 , "NIRONE" : 341 }
 
 def build_modeling_dataset(instrument,
                            metadata_path = None,

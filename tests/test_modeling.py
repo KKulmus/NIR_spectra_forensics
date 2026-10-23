@@ -9,13 +9,29 @@ Created on Tue Oct 13 11:36:46 2026
 import unittest
 
 import pandas as pd
-from nir_forensics.paths import FIXTURE_DIR
+from nir_forensics.paths import FIXTURE_DIR, PROJECT_ROOT
 from nir_forensics.modeling.dataset import build_modeling_dataset
 
+HAS_RAW_DATA = (
+    PROJECT_ROOT / "dataset" / "datafiles_raw" / "K_NeoSpectra.xlsx"
+).exists()
 
 
+@unittest.skipUnless(HAS_RAW_DATA, "Lizenzdaten (Kranenburg, DOI 10.21942/uva.21252300) nicht verfügbar")
+class TestNeospectraData(unittest.TestCase):
 
-
+    def test_rawData_regression_neospectra(self):
+        """Expect: 160 spectral data without missing values"""
+        df_neospectra = build_modeling_dataset(instrument = "neospectra")
+        df_neospectra = df_neospectra.drop(columns=["nr"], errors="ignore")
+        neo_spectral_cols = [
+            c for c in df_neospectra.columns
+            if isinstance(c, (int, float))
+        ]
+        neo_values = df_neospectra[neo_spectral_cols]
+        self.assertEqual(neo_values.shape[1], 160)
+        
+        self.assertEqual(neo_values.isna().sum().sum(), 0)
 
 
 class TestModelingData(unittest.TestCase):

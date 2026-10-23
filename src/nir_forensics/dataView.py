@@ -66,7 +66,7 @@ class ReadData():
     
     def _prepare_codes(self):
         """Vectorized: normalize all codes once, store as column 'code_norm'."""
-        new_cols = [self.df.columns[0]] + pd.to_numeric(self.df.columns[1:]).tolist()
+        new_cols = [self.df.columns[0]] + np.round(pd.to_numeric(self.df.columns[1:]).to_numpy(dtype=float),8).tolist()
         self.df.columns = new_cols
         self.spectral_cols = self.df.columns[1:].tolist()
         codes = self.df.iloc[:, 0].astype(str).str.strip()

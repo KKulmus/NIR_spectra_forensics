@@ -15,7 +15,7 @@ from nir_forensics.paths import PROJECT_ROOT
 
 RAW_DIR = PROJECT_ROOT / "dataset" / "datafiles_raw"
 AVG_DIR = PROJECT_ROOT / "dataset" / "datafiles_avg"
-PREPROCESSING_VERSION = "3" 
+PREPROCESSING_VERSION = "4" 
 
 def build_path(rd: ReadData, AVG_DIR = AVG_DIR, parquet = True) -> str:
     if parquet:
