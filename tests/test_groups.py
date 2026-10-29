@@ -102,15 +102,5 @@ class TestGroups(unittest.TestCase):
         df_res["group"] = []
         df_res["group"] = df_res["group"].astype(object)
         assert_frame_equal(df_code_empty, df_res)
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+ 
         

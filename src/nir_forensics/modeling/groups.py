@@ -62,26 +62,4 @@ def make_groups(df: pd.DataFrame) -> pd.DataFrame:
     
     
     
-    
-    
-    # str_codes = codes.astype(str).str.strip()
-    # slist = list(str_codes)
-    # prefixes =  ["PAM", "K", "N", "C", "D"]
-    # groups = [s for s in slist if any(s.startswith(prefix) for prefix in prefixes)]
-    # tpList = [g for g in slist if g not in groups]
-    # #extract the digits for T and P set separately
-    # digP = ["".join([c for c in a if c.isdigit()]) for a in tpList if a.startswith("P")]
-    # digT = ["".join([c for c in a if c.isdigit()]) for a in tpList if a.startswith("T")]
-    # #check if the lists are equal (all Tablets crushed?)
-    # #if yes, combine them to new TP-group, keep digits
-    # if sorted(digT) == sorted(digP):
-    #     digTsort = [int(d) for d in digT]
-    #     digTsort.sort()
-    #     digTsort = [str(s) for s in digTsort]
-        
-    #     temp = ["TP"+dig for dig in digTsort]
-    #     groups.extend(temp)
-    # else:
-    #     print("Warning")
-    # return pd.Series(groups)
-        
+  
