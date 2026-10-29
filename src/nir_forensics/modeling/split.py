@@ -6,8 +6,9 @@ Created on Wed Oct 21 12:54:26 2026
 @author: kathrin
 """
 
-from sklearn.model_selection import GroupShuffleSplit
+from sklearn.model_selection import GroupShuffleSplit, StratifiedGroupKFold
 import pandas as pd
+
 
 def split_dataset(dataset: pd.DataFrame, n_splits = 1, test_size = 0.2, random_state = 42):
     """Performs a train-test split of a dataset of one instrument 
@@ -51,3 +52,27 @@ def split_features_target(trainset: pd.DataFrame, testset: pd.DataFrame, target 
     test_target = testset[target]
     
     return train_features, train_target, test_features, test_target
+
+def create_cv_splits(dataset: pd.DataFrame, n_splits = 5, shuffle = True, random_state = 42):
+   """"Creates n_split folds of stratifiedGroupKFold split train-test-split
+   
+    Args: 
+        dataset (pd.DataFrame) : preprocessed dataframe of a single instrument (output from build_modeling_data) 
+        n_splits (int): number of train-test splits for cross-validation, defaults to 5
+        shuffle (bool): If True: shuffle each group's samples before splitting, defaults to True
+        random_state (int): arbitrary number to guarantee reproducibility if shuffle = True, defaults to 42
+    Returns: 
+        two lists with train and test_indices of the n_splits folds (use with .iloc on dataset)
+   
+   """
+   if shuffle == False:
+       random_state = None
+   skf = StratifiedGroupKFold(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
+   train_indices = []
+   test_indices = []
+   for (train_index, test_index) in skf.split(dataset, y = dataset["type"], groups=dataset["group"]):
+       train_indices.append(train_index)
+       test_indices.append(test_index)
+   return train_indices, test_indices
+   
+        
