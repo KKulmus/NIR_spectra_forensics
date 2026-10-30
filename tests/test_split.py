@@ -10,10 +10,12 @@ import unittest
 
 
 from nir_forensics.paths import FIXTURE_DIR
-from nir_forensics.modeling.split import split_dataset, split_features_target
+from nir_forensics.modeling.split import split_dataset, split_features_target, create_cv_splits
 from nir_forensics.modeling.dataset import build_modeling_dataset
 from pandas.testing import assert_frame_equal
 import pandas as pd
+import re
+import numpy as np
 
 
 
@@ -63,5 +65,51 @@ class TestSplit(unittest.TestCase):
         result = ["" if pd.isna(x) else x for x in result]
         expected = ['other', 'cocaine', '' ,'cocaine']
         self.assertEqual(sorted(result), sorted(expected))
+        
+class TestCVSplit(unittest.TestCase):
+    
+    @classmethod
+    def setUpClass(cls):
+        """Load data-files once (using the cache)"""
+        cls.df = pd.read_excel(FIXTURE_DIR / "cv_folding_fixture.xlsx") 
+    
+    def test__cv_split_number_of_folds(self):
+        """Tests whether number of folds == n_split = 5"""
+        train_index, test_index = create_cv_splits(self.df, n_splits = 5, shuffle = True, random_state = 42)
+        self.assertEqual(len(train_index),5)
+        self.assertEqual(len(test_index),5)
+    
+    def test_cv_split_t_p_separation(self):
+        """Tests whether t and p-samples with same group are both in train or in test set"""
+        train_index, test_index = create_cv_splits(self.df, n_splits = 5, shuffle = True, random_state = 42)
+        
+        tp_list_train = []
+        for i in range(len(train_index)):
+            groups = self.df.iloc[train_index[i]]["group"]
+            tp_list_train.append(groups[groups.str.startswith("E")])
+
+
+        tp_list_test = []
+        for i in range(len(test_index)):
+            groups = self.df.iloc[test_index[i]]["group"]
+            tp_list_test.append(groups[groups.str.startswith("E")])
+        
+        for l in range(len(tp_list_test)):
+            self.assertEqual(len(set(tp_list_test[l])&set(tp_list_train[l])),0)
+    
+    def test_cv_split_reproducibility(self):
+        """Tests whether setting a random state yield the same folds"""
+        train_index_1, test_index_1 = create_cv_splits(self.df, n_splits = 5, shuffle = True, random_state = 42)
+        train_index_2, test_index_2 = create_cv_splits(self.df, n_splits = 5, shuffle = True, random_state = 42)
+        for l in range(len(train_index_1)):
+            np.testing.assert_array_equal(train_index_1[l], train_index_2[l])
+        for l in range(len(test_index_1)):
+            np.testing.assert_array_equal(test_index_1[l], test_index_2[l])
+            
+    def test_cv_split_test_train_disjoint(self):
+        """Test whether the test-train indices of each fold are disjoint"""
+        train_index, test_index = create_cv_splits(self.df, n_splits = 5, shuffle = True, random_state = 42)
+        for l in range(len(train_index)):
+            self.assertEqual(len(set(train_index[l]) & set(test_index[l])), 0)
         
         
