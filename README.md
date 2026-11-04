@@ -16,6 +16,7 @@ wavelength range. The products under discussion are distinguished by their ease
 database with comparison spectra in order to ensure the quality of the data; secondly, 
 to develop algorithms for preprocessing; thirdly, to engineer an appropriate 
 machine-learning model and evaluate it across the various instruments.
+
 ## 2. Data
 Research Article: Kranenburg, Ruben F. et al. 
 "The importance of wavelength selection in on-scene identification of drugs of 
@@ -83,12 +84,7 @@ PAM000 is devoid of substance-specific absorbance patterns, exhibiting only a ne
 It is concluded that PAM000 is a white-reference measurement devoid of any controlled substance content.
 
 
-![background diagnostic comparison](figs/background_diagnosis.png)
-
-*Figure 1: Comparison of PAM000 with 4 tablets. It exhibits weak structure 
-(particularly <950 nm), indicating a near-constant background.
-(1st derivative, SNV-normalized)*
-
+![ Comparison of PAM000 with 4 tablets. It exhibits weak structure (particularly <950 nm), indicating a near-constant background.(1st derivative, SNV-normalized)](figs/background_diagnosis.png)
 
 
 ### 3.3 Unidentified sample T150 
@@ -108,21 +104,20 @@ candidate (T32) is an MDMA tablet. The two independent analyses point to
 different substance classes, reinforcing that no reliable assignment exists. 
 Exclusion stands.
 
-![T150 vs PAM000 diagnostic comparison](figs/t150_diagnosis.png)
+![T150 displays spectral dynamics comparable to genuine tablets, unlike the flat background curve PAM000. (1st derivative, SNV-normalized)](figs/t150_diagnosis.png)
 
-*Figure 2: T150 displays spectral dynamics comparable to genuine tablets, unlike the flat background curve PAM000. 
-(1st derivative, SNV-normalized)*
+
 
 ### 3.4 Data Quality Inspection: negative absobance values
 
 During data quality inspection of the replicate-averaged MicroNIR spectra, 
 negative absorbance values were found in 27 averaged samples across
- the K, N, D, PAM and C sample families (Table 3). Negative absorbance is
+ the K, N, D, PAM and C sample families (Table 1). Negative absorbance is
   physically implausible, as it would imply the sample reflects more light
    than the white reference. The affected values are all small in magnitude 
-   (mostly < 0.005, maximum ≈ [0.0226] at 939 nm) and occur predominantly in the lower 
-   wavelength region of the MicroNIR detector (~939–1140 nm; individual values 
-   up to ~1330 nm with magnitudes below 4·10⁻⁴), where the signal-to-noise 
+   (mostly < 0.005, maximum ~ [0.0226] at 939 nm) and occur predominantly in the lower 
+   wavelength region of the MicroNIR detector (~ 939–1140 nm; individual values 
+   up to ~ 1330 nm with magnitudes below 4e-4), where the signal-to-noise 
    ratio is poorest. We therefore interpret them as instrument noise near 
    the detection limit rather than as real spectral information. The values 
    were retained unmodified in the interest of minimal data manipulation; 
@@ -163,7 +158,7 @@ negative absorbance values were found in 27 averaged samples across
  |  26|   PAM95|  [-0.0031682, -0.0001695]|   [976.238, 1093.931]|
  |  27|  PAM107|   [-0.014651, -0.0001453]|    [951.46, 1310.733]|
  
- **Table 3** Negative Absorbance: (Occurs only within MicroNIR): 
+ **Table 1** Negative Absorbance: (Occurs only within MicroNIR): 
  Samlpe-Code, Minimal and Maximal wavelength with negative values and
  respective absorbance values 
  
@@ -195,18 +190,18 @@ it does not resample or otherwise alter the spectral measurements.
 
 The original dataset defines individual substance names (cocaine, MDMA, heroin 
 brown, 2C-B, etc.), resulting in highly fragmented class labels with very few 
-samples per class (many with n ≤ 5). To enable statistically meaningful 
+samples per class (many with n $\leq 5$). To enable statistically meaningful 
 classification evaluation, a **hierarchical grouping** has been introduced in metadata.xlsx:
 
 |type|Sample Count|Rationale|
-| :---- | :----- | :----- |
+| :---- | :----- | :------ |
 |cocaine |	208|	Controlled substance (primary target)|
 |MDMA|	95	|Controlled substance (primary target)|
-|no_controlled_substance|	70|	Legitimate cutting agents/adulterants|
-|amphetamine_type|	55|	Related stimulants|
-|2C-B_phenethylamine-psychedelics|	34	|Psychedelic phenethylamines|
+|no controlled substance|	70|	Legitimate cutting agents/adulterants|
+|amphetamine type|	55|	Related stimulants|
+|2C-B phenethylamine psychedelics|	34	|Psychedelic phenethylamines|
 |cathinone|	30|	New psychoactive substances|
-|ketamine|	22	Dissociative|
+|ketamine|	22|	Dissociative|
 |other|	12	|Mixed/unclassified|
 
 **Total: 526 samples** across 8 target classes.
@@ -219,30 +214,30 @@ via macro-averaged metrics rather than single-sample rare-class predictions.
 ### 4.2 Class distribution
 
 
-![class distribution](figs/sample_distribution.png)
+![Sample Distribution by Substance Class (Meta Data)](figs/sample_distribution.png)
 
-*Figure 3: Sample Distribution by Substance Class (Meta Data)*
+
 
 **Implication:** Accuracy is an unfavorable metric for this task. 
-A majority-class classifier achieves 39.6 % accuracy regarding the metadata 
+A majority-class classifier achieves 39.6 \% accuracy regarding the metadata 
 without any spectral information. For a specific instrument the class-distribution
 might differ and therfor the majority-class classifier too.
 We report **macro-F1** and **weighted-F1** instead.
 
 
-||                                  |ASD|  MicroNIR|  NeoSpectra|  Scio|  NIRONE  |Meta Data|
-|:----|:----|:----|:----|:----|:----|:----|
+|                                |ASD|Micro-NIR|Neo-Spectra|Scio|NIR-ONE|Meta Data|
+|:-------------|:----|:----|:----|:----|:----|:----|
 | cocaine                           | 144       | 148         | 148   | 141     |  68   | 208| 
 | MDMA                              |  86       |  88         |  88   |  94     |  88   | 95| 
-| no_controlled_substance           |  60       |  65         |  65   |  61     |  58   | 70| 
-| amphetamine_type                  |  36       |  44         |  44   |  51     |  43   | 55| 
-| 2C-B_phenethylamine-psychedelics  |  33       |  34         |  34   |  32     |  34   | 34| 
+| no controlled substance           |  60       |  65         |  65   |  61     |  58   | 70| 
+| amphetamine type                  |  36       |  44         |  44   |  51     |  43   | 55| 
+| 2C-B phenethylamine psychedelics  |  33       |  34         |  34   |  32     |  34   | 34| 
 | cathinone                         |  15       |  29         |  29   |  13     |  29   | 30| 
 | ketamine                          |  10       |  11         |  11   |  17     |  11   | 22| 
 | other                             |   5       |  10         |  10   |   8     |  10   | 12| 
-| Total                             | 389       | 429         | 429   | 417     | 341   | 526| 
+| **Total**                             | **389**       | **429**         | **429**   | **417**     | **341**   | **526**| 
 
-**Table : Available samples by substance class and instrument** The instrument data 
+**Table 4: Available samples by substance class and instrument** The instrument data 
 files were averaged and joined on the "code" column against *metadata.xslx*. Scio contains two samples
 without metadata (PAM000, T150; see 3.2 and 3.3 for details), these are excluded. For NIRONE 
 there are no data for the K-calibration-set, as detailed in the data paper. 
@@ -252,21 +247,19 @@ samples, given in metadata.xlsx are measured.
 ### 4.3 Training Data selection
 
 |Decision|Rationale|
-| :-------|:-------|
-|Instrument: MicroNIR|Largest wavelength range outside the 
-ASD benchmark (950–1650 nm); adequate resolution (125 points); 
-non-benchmark instrument avoids confounding model quality with ASD's superior hardware.|
-|Data Level: Averaged Files	| *_Avg_*.xlsx files provide one row per sample 
-(replicates already collapsed). This eliminates leakage risk where training and 
-test sets share replicates of the same physical sample.|
-|Set K Included	Calibration mixture set (88 samples, cocaine 10–100 %). Despite 
-increasing cocaine imbalance (80/8), the K-set adds scientifically valuable variation:
- How much adulteration can the model tolerate? Excluding it removes an interesting stress test.|
-|Sets T & P Merged	|Tablets (T) and powdered tablets (P) originate from identical
- material (same code number, same type). They are kept together — both are used,
-  but T/P pairs are never split between train and test.|
-|Excluded Samples|	PAM000 (background/reference scan, no substance) and T150 
-(no metadata entry) are dropped. All remaining samples have valid type annotations.|
+| :-------|:------------------------|
+|Instrument: MicroNIR|see listing below|
+|Data Level: Averaged Files	| **_Avg_**.xlsx files provide one row per sample (replicates already collapsed). This eliminates leakage risk where training and test sets share replicates of the same physical sample.|
+|Set K Included	Calibration mixture set (88 samples, cocaine 10–100 %).| Despite increasing cocaine imbalance (80/8), the K-set adds scientifically valuable variation: How much adulteration can the model tolerate? Excluding it removes an interesting stress test.|
+|Sets T & P Merged	|Tablets (T) and powdered tablets (P) originate from identical material (same code number, same type). They are kept together — both are used, but T/P pairs are never split between train and test.|
+|Excluded Samples|	PAM000 (background/reference scan, no substance) and T150 (no metadata entry) are dropped. All remaining samples have valid type annotations.|
+
+**MicroNIR** was selected for initial model development because:
+
+- It covers a relatively broad wavelength range (950–1650 nm) compared to the other portable instruments.
+- Its spectral range is positioned approximately in the middle of the wavelength ranges covered by the four portable instruments, making it a useful starting point for investigating cross-instrument transfer.
+- Its spectral resolution (125 measurement points) provides a reasonable basis for model development.
+- Using a portable instrument rather than the ASD laboratory benchmark avoids confounding model performance with the superior hardware characteristics of the reference instrument.
 
 **Final Dataset Size:** After filtering for MicroNIR averaged files + 
 valid metadata. PAM000 and T150 occur exclusively in the SCiO dataset 
@@ -286,48 +279,61 @@ to guarantee leakage-free splits.
 
 **Examples:**
 
-    - Replicate measurements of the same sample are averaged before modelling.
-    - Tablets and their corresponding crushed samples (e.g. T2 and P2) are assigned to the same group.
-    - Samples with the same source code are kept together.
+- Replicate measurements of the same sample are averaged before 
+    modelling.
+- Tablets and their corresponding crushed samples (e.g. T2 and P2) 
+    are assigned to the same group.
+- Samples with the same source code are kept together.
 
 
 **Group assignment:**
  The group column is created during dataset preparation. For T/P samples, 
  the group identifier is based on the sample number, so corresponding tablets 
- and crushed samples share a group (e.g. T2 and P2 → E2). Other samples are 
+ and crushed samples share a group (e.g. T2 and P2 $\rightarrow$ E2). Other samples are 
  grouped by their normalized sample code.
 
-**Implementation:** split_dataset() uses scikit-learn's GroupShuffleSplit with 
-the group column. The default test size is 20% of the groups, and random_state=42 
-makes the split reproducible. Groups are kept intact, so samples from the same 
-group cannot appear in both training and test sets.
+**Implementation:** Cross-validation uses scikit-learn's *StratifiedGroupKFold* 
+with five folds, shuffling enabled and random_state=42 for reproducibility.
 
-**Important limitation:**
- GroupShuffleSplit does not stratify the split by the target variable type. 
- Therefore, class proportions may differ between training and test sets, and 
- some classes may be underrepresented or absent in the test set. The resulting 
- class distribution should be checked before interpreting model metrics.
+This strategy combines two requirements:
 
-The current implementation uses the first split returned by GroupShuffleSplit, 
-even if n_splits is set to a value greater than one.
+- Group separation: Samples belonging to the same group are never 
+    distributed across training and test folds.
+- Stratification: The class distribution of the target variable type is 
+    taken into account when assigning groups to folds.
+
+Since stratification is constrained by group membership and the available 
+number of groups per class, perfectly identical class proportions across all 
+folds cannot be guaranteed.
+
+**Validation of test-fold class distributions:**
+
+The normalized class distributions of the individual test folds are compared 
+with the distribution of the complete dataset. The heatmap (cf. fig. 4) shows the deviation 
+in percentage points for each class and fold. Values close to zero indicate that the 
+fold closely reflects the overall class distribution.
+
+![Deviation of normalized class distributions in the five test folds from the overall dataset distribution (percentage points). Lower deviations indicate better preservation of the original class proportions  by StratifiedGroupKFold.](figs/heatmap_testset_class_deviation.png)
+
 
 **SMOTE:** Synthetic oversampling techniques such as SMOTE are not used in the 
 current baseline. Their suitability for spectroscopic data would require 
 separate evaluation; class imbalance is initially addressed through appropriate 
 evaluation metrics rather than synthetic samples.
 
-### Metrics and Baselines
+### 4.5 Metrics and Baselines
 
 |Metric|Rationale|
-| :-------|:-------|
+| :-----|:-------|
 |Balanced Accuracy	|Mean of per-class recall; insensitive to class imbalance. A majority classifier yields approximately **12.5 %** (1/8) if all 8 classes are equally represented. Here it will be slightly higher due to uneven distribution.|
 |Macro-F1	 | Harmonic mean of precision/recall averaged across classes; penalizes systematic misclassification of rare classes.|
+|Weighted-F1| Calculates the mean of the class-wise F1 scores weighted by the number of samples in each class, accounting for class imbalance.|
 |Per-Class Confusion Matrix|	Diagnostic tool to identify which classes are systematically confused (e.g., cathinone vs. amphetamine_type).|
 
 
 **Majority Baseline Prediction:** Always predicting "cocaine" yields
 **~12.5 % balanced accuracy** (perfect recall on cocaine = 100 %, zero recall 
-on 7 other classes = 0 %, average = (1 + 0×7)/8 = 12.5 %). Any real model must
+on 7 other classes = 0 %, average = (1 + 0*7)/8 = 12.5 %). Any real model must
  exceed this threshold meaningfully.
 
 ### 4.6 Implementation Workflow
@@ -344,9 +350,10 @@ The modelling workflow is organized into the following stages.
 
 **Stage 2: Train-test split**
 
-1. Split the dataset into training and test sets using GroupShuffleSplit.
-2. Keep all samples belonging to the same group in one split.
-3. Check the class distribution in both sets and identify classes that are absent or underrepresented.
+1. Generate five cross-validation folds using StratifiedGroupKFold.
+2. Keep all samples belonging to the same group within a single fold to prevent data leakage.
+3. Preserve class distributions across folds as far as the group constraints allow.
+4. Compare the class distributions of each test fold with the overall dataset distribution to identify underrepresented or absent classes.
 
 **Stage 3: Baseline evaluation**
 

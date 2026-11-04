@@ -21,6 +21,7 @@ from nir_forensics.modeling.dataset import build_modeling_dataset
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from nir_forensics.paths import PROJECT_ROOT
 
 pd.set_option("display.max_rows", None)
 pd.set_option("display.max_columns", None)
@@ -101,13 +102,22 @@ differences = pd.concat(differences, ignore_index=True)
 differences = differences.set_index(["Instrument", "Fold"])
 plt.figure(figsize = (10,8))
 
-ax = sns.heatmap(differences, center=0
+ax = sns.heatmap(differences.T, center=0
             , vmin = -7, vmax = 7
             , cmap = 'coolwarm'
             , square = True
-            , annot = True)
-ax.hlines([5,10,15], 0, 8, colors = "black")
-plt.show()
+            , annot = True
+            , cbar_kws={"shrink": 0.4})
+cbar = ax.collections[0].colorbar
+cbar.ax.tick_params(labelsize=7)
+ax.vlines([5,10,15], 0, 8, colors = "black")
+ax.set_title("Percentage-point difference between normalized class \n distribution of the "
+          "complete dataset and of each test fold",
+          fontsize=12,
+          fontweight="bold")
+plt.savefig(PROJECT_ROOT / "figs" /"heatmap_testset_class_deviation.png", dpi=300,
+    bbox_inches="tight" )
+plt.close()
 
         
     
