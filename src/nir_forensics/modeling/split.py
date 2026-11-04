@@ -45,11 +45,13 @@ def split_features_target(trainset: pd.DataFrame, testset: pd.DataFrame, target 
         raise ValueError(f"{target} is no column name of trainset. Typo?")
     if target not in testset.columns.tolist():
         raise ValueError(f"{target} is no column name of testset. Typo?")
-    train_features = trainset.drop([target,"group"], axis = 1)
-    test_features = testset.drop([target,"group"], axis = 1)
+    train_features = trainset.loc[:, pd.to_numeric(trainset.columns, errors="coerce").notna()]
+    test_features = testset.loc[:, pd.to_numeric(testset.columns, errors="coerce").notna()]
 
     train_target = trainset[target]
     test_target = testset[target]
+    if not train_features.columns.equals(test_features.columns):
+        raise ValueError("Train and test features do not match.")
     
     return train_features, train_target, test_features, test_target
 
