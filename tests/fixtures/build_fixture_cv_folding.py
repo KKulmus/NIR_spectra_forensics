@@ -6,7 +6,7 @@ Created on Fri Oct 30 10:24:24 2026
 @author: kathrin
 Creates a fixture dataset for testing cross-validation splitting.
 
-The fixture contains 50 samples distributed across eight classes according
+The fixture contains 200 samples distributed across eight classes according
 to the class distribution specified in the metadata. Samples are assigned
 to six group categories (PAM, E, N, K, C, D). The E groups represent paired
 T/P samples, which share the same group identifier.
@@ -35,8 +35,8 @@ random.shuffle(type_list)
 def create_group_dist():
     """ Generates random group sizes for the cross-validation fixture.
 
-        Six positive integers are sampled from the range 0 to 29. New values
-        are generated until their sum equals 50 and the second value (E group)
+        Six positive integers are sampled from the range 0 to 129. New values
+        are generated until their sum equals 200 and the second value (E group)
         is even. The even group size ensures that all T/P samples can be assigned
         in pairs.
         
@@ -74,10 +74,20 @@ for group in group_list:
             group = group.replace("E","P")
         i+=1
     code_list.append(group)
+    
+#prepare spectroskopic data for 4 wavengths
+def generate_dummy_spectra():
+    return [random.random() for _ in range(200)]
+    
+
 
 dic = {"code" : code_list,
        "type" : type_list,
-       "group" : group_list }
+       "group" : group_list,
+       "1000.0" : generate_dummy_spectra(),
+       "1100.0" : generate_dummy_spectra(),
+       "1200.0" : generate_dummy_spectra(),
+       "1300.0" : generate_dummy_spectra()}
 df = pd.DataFrame(dic)
 
 

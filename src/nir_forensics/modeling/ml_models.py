@@ -7,43 +7,22 @@ Created on Wed Oct 21 14:56:33 2026
 """
 
 
-from nir_forensics.modeling.split import create_cv_splits, split_features_target
 from sklearn.dummy import DummyClassifier
 import pandas as pd
 
-def dummy_classified(dataset: pd.DataFrame, target = "type"):
-    """Fits DummyClassifier model using a prepared dataset.
+
+def fit_dummy_classifier(train_features: pd.DataFrame,
+                         train_target: pd.Series):
+    """Fits a DummyClassifier using the provided training data.
 
     Args:
-        dataset (pd.DataFrame): Dataset for one instrument, preprocessed
-            using build_modeling_dataset().
-        target (str) : name of the target column in dataset
+        train_features (pd.DataFrame): Training features.
+        train_target (pd.Series): Training target labels.
 
     Returns:
-        results: list of dictionaries with predictions and true_labels for each fold
+        DummyClassifier: Fitted dummy classifier.
     """
-    dataset = dataset.copy()
-    train_indices, test_indices = create_cv_splits(dataset)
-    results = []
-    
-    for i, (train_idx, test_idx) in enumerate(zip(train_indices, test_indices)):
-    
-        train = dataset.iloc[train_idx]
-        test = dataset.iloc[test_idx]
-    
-        train_features, train_target, test_features, test_target = (
-            split_features_target(train, test, target)
-        )
-    
-        dummy_clf = DummyClassifier(strategy="prior")
-        dummy_clf.fit(train_features, train_target)
-    
-        predictions = dummy_clf.predict(test_features)
-        results.append({"fold": i,
-                        "predictions" : predictions, 
-                        "true_labels" : test_target})
-     
-    return results
-    
+    dummy_clf = DummyClassifier(strategy="prior")
+    dummy_clf.fit(train_features, train_target)
 
-#create_cv_splits(dataset: pd.DataFrame
+    return dummy_clf

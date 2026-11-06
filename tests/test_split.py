@@ -111,5 +111,17 @@ class TestCVSplit(unittest.TestCase):
         train_index, test_index = create_cv_splits(self.df, n_splits = 5, shuffle = True, random_state = 42)
         for l in range(len(train_index)):
             self.assertEqual(len(set(train_index[l]) & set(test_index[l])), 0)
+            
+    def test_cv_split_testfold(self):
+        """Tests whether each sample is exactly once in the testfold 
+        and the other four times in the trainfold"""
+        train_index, test_index = create_cv_splits(self.df, n_splits = 5, shuffle = True, random_state = 42)
+        test_indices_total = [idx for list_idx in test_index for idx in list_idx]
+        self.assertEqual(len(test_indices_total), len(self.df))
+        self.assertEqual(len(test_indices_total), len(set(test_indices_total)))
+        self.assertEqual(list(range(len(self.df))), sorted(test_indices_total))
         
         
+        
+        
+    
