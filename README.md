@@ -211,6 +211,33 @@ The type field is manually curated by the author, it does not exist in
 the original Kranenburg et al. publication. This aggregation enables evaluation 
 via macro-averaged metrics rather than single-sample rare-class predictions.
 
+#### 4.1.1 Spectral validation of the target variable
+
+![ASD: Spectra grouped by type with class median (solid black)](figs/ASD_type_comparison.png)
+
+Before proceeding with machine-learning classification, the manually curated 
+target variable type was examined for spectral consistency.
+
+For this purpose, the averaged ASD laboratory spectra were grouped by their 
+assigned substance classes. Each spectrum was SNV-normalized, and the individual 
+spectra were compared with the corresponding class median.
+
+The comparison reveals consistent spectral patterns within the assigned substance 
+classes. Although individual spectra show deviations from their respective class 
+medians, the overall spectral characteristics remain recognizable.
+
+These deviations may reflect differences in sample composition, including
+varying concentrations of adulterants or cutting agents.
+
+**Conclusion**: The spectral comparison provides evidence that the manually defined 
+type categories represent meaningful and spectroscopically plausible groupings.
+ This supports their use as target labels for the subsequent classification experiments.
+
+The ASD laboratory spectrometer was chosen for this initial assessment because 
+of its broad wavelength coverage (350–2500 nm).
+
+
+
 ### 4.2 Class distribution
 
 

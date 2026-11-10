@@ -5,6 +5,7 @@ from nir_forensics.dataView import ReadData
 import pandas as pd
 from nir_forensics.preprocessing import snv, savgol
 from pathlib import Path
+import pandas as pd
 
 class PlotSpectra():
     """Visualizes raw NIR sprectra from forensic drug analysis datasets.
@@ -191,9 +192,83 @@ def get_metadata(metadata_filename: str, path :str):
     return pd.read_excel(Path(path)/metadata_filename)
 
 
+def plot_class_spectra(dataset: pd.DataFrame, instrument: str, apply_snv: bool = False):
+    
+    """ Creates a 2x4 subplots figure of averaged spectra for each sample, grouped
+    by type-variable. Median is also shown. 
+    
+    Args:
+        dataset (pd.DataFrame) : preprocessed using build_modeling_dataset() dataset 
+                                    of one instrument
+                                    
+        instrument (str) : instrument name for plot-title
+        
+        apply_snv (bool) : if TRUE SNV nomalization is applied, if False raw spectra are used
+                            default = False
+        
+    Returns:
+        2x4 subplots figure of averaged spectra, grouped by "type" for each sample
+        with median shown. SNV is applied if set
+    
+    """
 
+    # Identify wavelength columns
+    numeric_mask = pd.to_numeric(dataset.columns, errors="coerce").notna()
+    numeric_columns = dataset.columns[numeric_mask]
+    wavelengths = pd.to_numeric(numeric_columns)
 
+    # Apply SNV to each spectrum
+    dataset = dataset.copy()
+    if apply_snv:
+        dataset[numeric_columns] = dataset[numeric_columns].apply(snv, axis=1)
+   
+    # Group spectra by substance type
+    grouped = dataset.groupby("type", sort = False)[numeric_columns]
+    group_sizes = grouped.size().sort_values(ascending=False)
 
+    # Create subplot grid
+    fig, axs = plt.subplots(4,2, figsize = (12,16))
+    axs = axs.flat
+
+    for ax, substance_type in zip(axs, group_sizes.index):
+
+        spectra = grouped.get_group(substance_type)
+        median = spectra.median(axis=0)
+
+        # Plot individual spectra
+        ax.plot(
+            wavelengths,
+            spectra.T,
+            alpha=0.2,
+            linewidth=0.7
+        )
+
+        # Plot median spectrum
+        ax.plot(
+            wavelengths,
+            median,
+            color="black",
+            linewidth=1.5,
+            label="Median"
+        )
+
+        ax.set_title(f"{substance_type} (n={len(spectra)})")
+        ax.set_xlabel("Wavelength (nm)")
+        if apply_snv:
+            ax.set_ylabel("SNV absorbance (a.u.)")
+        else: 
+            ax.set_ylabel("Absorbance (a.u.)")
+
+    # Hide unused subplots
+    for ax in list(axs)[len(group_sizes):]:
+        ax.set_visible(False)
+    if apply_snv:    
+        fig.suptitle(f"{instrument}: SNV-normalized spectra by substance class")
+    else: 
+        fig.suptitle(f"{instrument}: Raw spectra by substance class")
+    fig.tight_layout(rect=[0, 0, 1, 0.97])
+    return fig    
+    
 
 
 
