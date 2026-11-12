@@ -405,3 +405,242 @@ not evidence that the spectra contain useful discriminatory information.
 review the class distribution in the split, and establish the evaluation procedure 
 before implementing and comparing more complex classifiers.
 
+### 5. Model evaluation
+
+The classification models are evaluated separately for each portable NIR 
+spectrometer: NIRONE, MicroNIR, NeoSpectra and SCiO.
+
+To prevent data leakage, model evaluation uses **StratifiedGroupKFold** 
+cross-validation with five folds (`n_splits=5`, `shuffle=True`, `random_state=42`). 
+Samples belonging to the same group are kept together in either the training or 
+test partition. The same folds are used for all models to ensure a fair comparison.
+
+The evaluation considers:
+
+- Macro-F1 and Weighted-F1 to assess overall classification performance.
+- Class-wise Recall to identify classes that are systematically missed.
+- Confusion matrices to investigate characteristic misclassifications.
+- Actual versus predicted class distributions to identify systematic prediction biases.
+
+#### 5.1 Dummy classifier
+
+A Dummy classifier serves as a baseline. It predicts classes without using 
+spectral information and therefore provides a reference for assessing whether 
+the Random Forest learns meaningful patterns from the spectra.
+
+For the MicroNIR dataset, the Dummy classifier uses the class prior and predominantly 
+predicts cocaine, the most frequent class.
+
+| Model | Macro-F1 (mean ± std) | Weighted-F1 (mean ± std) |
+|---|---:|---:|
+| Dummy (MicroNIR) | 0.0659 ± 0.0054 | 0.1775 ± 0.0235 |
+
+The low Macro-F1 reflects the inability of the Dummy classifier to distinguish 
+between the different substance classes. Its Weighted-F1 is higher because the 
+predictions benefit from the high proportion of the majority class.
+
+#### 5.2 Random Forest – basic model
+
+The initial Random Forest model uses the following configuration:
+
+| Parameter | Value |
+|---|---|
+| `n_estimators` | 100 |
+| `random_state` | 42 |
+| `class_weight` | `None` |
+
+No class weighting is applied at this stage. This provides a baseline for 
+investigating the influence of the class distribution on the predictions.
+
+##### Overall performance
+
+For MicroNIR, the Random Forest clearly outperforms the Dummy classifier:
+
+| Model | Macro-F1 (mean ± std) | Weighted-F1 (mean ± std) |
+|---|---:|---:|
+| Dummy | 0.0659 ± 0.0054 | 0.1775 ± 0.0235 |
+| Random Forest | 0.5983 ± 0.1029 | 0.6569 ± 0.0676 |
+
+The difference between Macro-F1 and Weighted-F1 indicates that classification
+ performance is not equally distributed across classes. The model performs 
+ substantially better on some classes than on others.
+
+##### Class-wise Recall
+
+The following table shows the pooled Recall values calculated from the combined 
+test predictions across all five folds. Recall describes the proportion of 
+samples of a given class that are correctly classified.
+
+| Substance class | NIRONE | MicroNIR | NeoSpectra | SCiO |
+|---|---:|---:|---:|---:|
+| 2C-B | 0.500 | 0.529 | 0.706 | 0.156 |
+| MDMA | 0.830 | 0.841 | 0.909 | 0.521 |
+| Amphetamine type | 0.233 | 0.295 | 0.341 | 0.137 |
+| Cathinone | 0.379 | 0.345 | 0.379 | 0.154 |
+| Cocaine | 0.794 | 0.926 | 0.932 | 0.823 |
+| Ketamine | 0.727 | 0.727 | 0.636 | 0.000 |
+| No controlled substance | 0.293 | 0.446 | 0.477 | 0.279 |
+| Other | 0.000 | 0.400 | 0.300 | 0.000 |
+
+Cocaine is classified reliably by all four instruments, although its Recall 
+varies. MDMA also achieves high Recall with NIRONE, MicroNIR and NeoSpectra, 
+but performs substantially worse with SCiO.
+
+Amphetamine-type substances, cathinones and samples without controlled substances 
+are considerably more difficult to classify. The performance for ketamine is 
+strongly instrument-dependent. The heterogeneous `other` category is particularly 
+difficult to identify.
+
+##### Recall variability across cross-validation folds
+
+The following table reports the mean and standard deviation of class-wise Recall 
+across the five cross-validation folds. The standard deviation describes the 
+variability between folds and is not a confidence interval.
+
+| Substance class | MicroNIR (mean ± std) | NeoSpectra (mean ± std) | NIRONE (mean ± std) | SCiO (mean ± std) |
+|---|---:|---:|---:|---:|
+| 2C-B | 0.618 ± 0.280 | 0.762 ± 0.157 | 0.508 ± 0.162 | 0.161 ± 0.113 |
+| MDMA | 0.852 ± 0.133 | 0.913 ± 0.078 | 0.832 ± 0.187 | 0.529 ± 0.061 |
+| Amphetamine type | 0.296 ± 0.115 | 0.360 ± 0.134 | 0.227 ± 0.040 | 0.151 ± 0.074 |
+| Cathinone | 0.362 ± 0.259 | 0.374 ± 0.119 | 0.367 ± 0.217 | 0.167 ± 0.236 |
+| Cocaine | 0.926 ± 0.036 | 0.933 ± 0.030 | 0.787 ± 0.055 | 0.822 ± 0.045 |
+| Ketamine | 0.775 ± 0.263 | 0.567 ± 0.416 | 0.792 ± 0.250 | 0.000 ± 0.000 |
+| No controlled substance | 0.448 ± 0.083 | 0.477 ± 0.147 | 0.293 ± 0.136 | 0.298 ± 0.158 |
+| Other | 0.500 ± 0.500 | 0.500 ± 0.500 | 0.000 ± 0.000 | 0.000 ± 0.000 |
+
+The fold-level results confirm the instrument-dependent classification performance.
+ Cocaine and MDMA show comparatively stable Recall for most instruments, whereas 
+ cathinones and ketamine exhibit substantial fold-to-fold variability. The high 
+ standard deviations for some rare classes, particularly `other`, reflect the 
+ limited number of samples per fold and should therefore be interpreted with caution.
+
+##### Confusion matrices
+
+The normalized confusion matrices for all four instruments are shown below.
+
+![Random Forest confusion matrices](figs/confusion_matrices_random_forest_basic.png)
+
+The matrices reveal recurring misclassification patterns:
+
+- Amphetamine-type substances are frequently classified as cocaine.
+- Cathinones are frequently classified as cocaine.
+- Samples without controlled substances are frequently classified as cocaine.
+- For NIRONE, several classes are also incorrectly assigned to MDMA.
+
+The direction of these errors is important. For example, MicroNIR classifies 
+approximately 41% of cathinone samples as cocaine, whereas only approximately 
+1% of cocaine samples are classified as cathinones. This is not a symmetric 
+confusion between two classes; rather, the classifier shows a clear preference 
+for assigning cathinone spectra to cocaine.
+
+##### Actual versus predicted class distributions
+
+To investigate whether these errors are related to the class distribution, the 
+actual and predicted proportions of each class were compared across all test folds.
+
+| Substance class | true | NIRONE predicted | true | MicroNIR predicted |true | NeoSpectra predicted |true | SCiO predicted |
+|----------|---:|---:|---:|---:|---:|---:|---:|---:|
+| MDMA | 0.258 | 0.343 | 0.205 | 0.242 | 0.205 | 0.217 | 0.225 | 0.233 |
+| Cocaine | 0.199 | 0.238 | 0.345 | 0.452 | 0.345 | 0.445 | 0.338 | 0.511 |
+| No controlled substance | 0.170 | 0.126 | 0.152 | 0.089 | 0.152 | 0.114 | 0.146 | 0.101 |
+| Amphetamine type | 0.126 | 0.111 | 0.103 | 0.056 | 0.103 | 0.063 | 0.122 | 0.072 |
+| 2C-B | 0.100 | 0.088 | 0.079 | 0.077 | 0.079 | 0.079 | 0.077 | 0.048 |
+| Cathinone | 0.085 | 0.050 | 0.068 | 0.051 | 0.068 | 0.040 | 0.031 | 0.019 |
+| Ketamine | 0.032 | 0.044 | 0.026 | 0.023 | 0.026 | 0.033 | 0.041 | 0.014 |
+| Other | 0.029 | 0.000 | 0.023 | 0.009 | 0.023 | 0.009 | 0.019 | 0.002 |
+
+The predicted distributions show a consistent tendency to overrepresent frequent
+ classes. MDMA is overrepresented for NIRONE, where it is the most frequent class.
+  Cocaine is overrepresented for MicroNIR, NeoSpectra and SCiO, where it is the most frequent class.
+
+Conversely, amphetamine-type substances, cathinones and samples without controlled 
+substances are underrepresented in the predictions across all four instruments. 
+The `other` class is almost never predicted.
+
+This pattern supports the hypothesis that the model is biased towards frequent
+ classes. The class distribution is therefore a potential contributing factor 
+ to the observed misclassifications, although spectral similarities between
+  classes may also play a role.
+
+##### Physical and chemical interpretation
+
+The observed classification performance and error patterns can be discussed in 
+the context of the underlying physical and chemical properties of the samples.
+
+**Amphetamine-type substances:**  
+The low Recall may partly reflect the considerable variation in sample composition. 
+Amphetamine samples can contain substantial amounts of cutting agents, and the 
+active substance content can vary considerably (approximately 5–30% in the samples 
+considered here). Consequently, the measured spectra may be dominated or strongly 
+influenced by additional components. This could make the samples less spectrally 
+consistent and increase the likelihood of misclassification as cocaine.
+
+**Cathinones:**  
+Cathinones form a chemically diverse group, and the number of available samples 
+is comparatively small. Both the chemical heterogeneity of the class and the 
+limited sample size may contribute to the low Recall. The frequent assignment 
+to cocaine suggests that the model may be responding to spectral features shared 
+by some samples or their mixtures rather than identifying class-specific features.
+
+**SCiO wavelength range:**  
+The particularly poor results for SCiO are consistent with the limited wavelength 
+coverage of this instrument. The ASD laboratory spectrometer comparison indicates 
+that characteristic spectral features and overtones become more apparent from 
+approximately 1000 nm onwards. If relevant information lies outside the SCiO 
+measurement range, the classifier cannot use it. This is a plausible explanation 
+for the poor classification of several classes, but the relationship needs to be 
+investigated against the actual wavelength ranges and spectral features available 
+to each instrument.
+
+**MDMA:**  
+MDMA is classified relatively reliably by NIRONE, MicroNIR and NeoSpectra. One 
+possible explanation is the comparatively high active-substance content in many 
+MDMA tablets. Drug-checking reports include tablets containing approximately 150–300 mg MDMA. 
+Higher concentrations of the active substance could result in more characteristic 
+spectral signatures. The lower Recall for SCiO may again be related to its wavelength coverage.
+
+**Cocaine:**  
+Cocaine achieves the highest and most consistent Recall across the instruments. 
+This may be related to its comparatively clear spectral signature and the relatively 
+large number of available samples. The sample background is also relevant: cocaine 
+samples can have high purity, with reported values reaching up to 99% and typical 
+values often around 60–80%. Nevertheless, the frequent prediction of cocaine for 
+other classes shows that the model also tends to use cocaine as a default 
+assignment when the spectral evidence is ambiguous.
+
+**Ketamine:**  
+Ketamine shows strongly instrument-dependent performance. In particular, MicroNIR 
+achieves a substantially higher Recall than SCiO. The ASD comparison suggests 
+relatively low spectral variation within the ketamine class and a recognizable 
+spectral signature. The poor SCiO result therefore deserves further investigation. 
+The comparatively small number of ketamine samples may also contribute to the 
+variability of the estimates.
+
+**Other and no controlled substance:**  
+Both categories are heterogeneous and do not represent chemically coherent substance 
+classes. `No controlled substance` can include a variety of substances without 
+controlled drugs, while `other` groups together substances that do not fit the 
+defined classes. Their spectral variability is therefore expected to be high, 
+making classification intrinsically difficult.
+
+An additional consideration is that the target taxonomy combines different 
+classification levels: individual substances such as cocaine, MDMA and ketamine; 
+chemical families such as amphetamine-type substances and cathinones; and heterogeneous 
+residual categories such as `other` and `no_controlled_substance`. This limits 
+the extent to which similar classification performance can be expected across all classes.
+
+##### Interim conclusion
+
+The basic Random Forest model clearly learns information from the NIR spectra and 
+substantially outperforms the Dummy baseline. However, its performance is strongly 
+class- and instrument-dependent.
+
+The most striking observation is the systematic overprediction of majority classes, 
+particularly cocaine. This is accompanied by low Recall for several less frequent 
+classes. The results therefore motivate a controlled investigation of class weighting.
+
+In the next evaluation step, the Random Forest will be trained with 
+`class_weight="balanced"`. All other model settings, datasets and cross-validation 
+splits will remain unchanged. The resulting Macro-F1, Weighted-F1, class-wise Recall, 
+prediction distributions and confusion matrices will be compared with the basic 
+model to assess whether class weighting improves the recognition of underrepresented classes.

@@ -5,7 +5,7 @@ from nir_forensics.dataView import ReadData
 import pandas as pd
 from nir_forensics.preprocessing import snv, savgol
 from pathlib import Path
-import pandas as pd
+import seaborn as sns
 
 class PlotSpectra():
     """Visualizes raw NIR sprectra from forensic drug analysis datasets.
@@ -118,20 +118,6 @@ def compare_devices(filenames: list, sample_id: str, apply_snv = False,
     return ax
 
 
-#def snv(spectrum: pd.Series) -> pd.Series:
-#    """Apply Standart Normal Variarte normalization to a single spectrum
-
-#        SNV centers the spectrum to mean=0 and scales to std=1,
-#        removing absolute absorbance differences between measurements.
-#        Useful for comparing spectra from 
-#    """
-#    spectrum = spectrum.astype(float)
-#    mu = spectrum.mean()
-#    sigma = spectrum.std()
-#    if sigma == 0:
-#        raise ValueError("Cannot normalize spectrum with zero standart variance.")
-#    return (spectrum-mu)/sigma
-    
 
 def compare_samples(metadata_filename: str,  path_metadata: str, samples_by_file: dict, apply_snv = False,
                     apply_deriv: int = 0,  # 0 = none, 1 = first derivative, 2 = second
@@ -268,6 +254,49 @@ def plot_class_spectra(dataset: pd.DataFrame, instrument: str, apply_snv: bool =
         fig.suptitle(f"{instrument}: Raw spectra by substance class")
     fig.tight_layout(rect=[0, 0, 1, 0.97])
     return fig    
+
+def plot_confusion_matrix_heatmap(conf_matrix, instrument: str, ax = None):
+    """Create heatmap on confusion matrix for selected instrument
+        Args:
+            conf_matrix (np.array) : confusion matrix (pooled) of an instrument
+            instrument (str) : Name of instrument for figure Title
+            ax (matplotlib.axes.Axes, optional): Existing axes instance.
+                                                If None, a new figure and axes are created.
+        Returns:
+            matplotlib.figure.Figure: Figure containing the heatmap.
+    """
+    all_labels = [
+        "2C-B_phenethylamine-psychedelics",
+        "MDMA",
+        "amphetamine_type",
+        "cathinone",
+        "cocaine",
+        "ketamine",
+        "no_controlled_substance",
+        "other"
+    ]
+    if ax is None: 
+       fig, ax = plt.subplots(figsize=(5, 4))
+    else:
+        fig = ax.figure
+   
+    sns.heatmap(
+        conf_matrix,
+        annot=True,
+        fmt=".2f",
+        cmap="Blues",
+        xticklabels=all_labels,
+        yticklabels=all_labels,
+        ax=ax,
+        vmin=0,
+        vmax=1
+    )
+
+    ax.set_title(instrument)
+    ax.set_xlabel("Predicted label")
+    ax.set_ylabel("True label")
+    return fig
+
     
 
 

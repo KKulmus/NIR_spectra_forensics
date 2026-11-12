@@ -14,7 +14,7 @@ from nir_forensics.modeling.split import split_dataset, split_features_target, c
 from nir_forensics.modeling.dataset import build_modeling_dataset
 from pandas.testing import assert_frame_equal
 import pandas as pd
-import re
+
 import numpy as np
 
 
@@ -73,7 +73,7 @@ class TestCVSplit(unittest.TestCase):
         """Load data-files once (using the cache)"""
         cls.df = pd.read_excel(FIXTURE_DIR / "cv_folding_fixture.xlsx") 
     
-    def test__cv_split_number_of_folds(self):
+    def test_cv_split_number_of_folds(self):
         """Tests whether number of folds == n_split = 5"""
         train_index, test_index = create_cv_splits(self.df, n_splits = 5, shuffle = True, random_state = 42)
         self.assertEqual(len(train_index),5)
