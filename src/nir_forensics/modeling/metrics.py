@@ -8,8 +8,8 @@ Created on Wed Oct 21 16:06:27 2026
 
 
 from sklearn.metrics import f1_score, classification_report, confusion_matrix
-
-from nir_forensics.modeling.evaluation import pooling_folds 
+import pandas as pd
+from nir_forensics.modeling.folds_utils import pooling_folds
 
 all_labels = [
      "2C-B_phenethylamine-psychedelics",
@@ -139,5 +139,67 @@ def calculate_fold_metrics(results):
                              } )
     return f1_metrics
 
+def calculate_pooled_metrics(results, instrument, model_name):
+    """Calculates the macro and weighted f1-scores pooled folds.
+        
+        Args:
+            results (list of dicts) : results from fold-wise prediction of a model
+            instrument (str) : name of the instrumen
+            model_name (str) : name of the model
+            
+        Returns:
+            dictionariy with instrument, model_name, macro-f1 and weighted-f1 for each fold
+    """
+    true_labels, predictions = pooling_folds(results)
+    macro = calculate_metric(true_labels, predictions, "macro", labels = all_labels)
+    weighted = calculate_metric(true_labels, predictions, "weighted", labels = all_labels)
+    f1_metrics = {"instrument": instrument,
+                  "model_name" : model_name,
+                     "Macro-F1" : macro,
+                     "Weighted-F1" : weighted
+                     }
+    return f1_metrics
+    
+
+def compare_class_distributions(results, instrument):
+    """Determine a dataframe with relative occurrence of true substance, predicted substance
+        and difference between both.
+        
+        Args:
+            results (list of dicts) : list of dictionaries with true and predicted labels per fold
+            instrument (str) : Name of instrument for labeling
+            
+        Returns:
+            pd.DataFrame with substance as index, and columns: relative occurrence of substance true,
+                    relative occurrence of sustance predicted and difference beween both;
+                    if difference is positive, occurrence is overestimated else underestimated
+        
+        """
+    true_labels, predictions = pooling_folds(results)
+    true_distribution = (
+    pd.Series(true_labels)
+    .value_counts(normalize=True)
+    )
+
+    predicted_distribution = (
+        pd.Series(predictions)
+        .value_counts(normalize=True)
+    )
+
+    distribution_comparison = pd.concat(
+        [true_distribution, predicted_distribution],
+        axis=1,
+        keys=["true", "predicted"]
+    ).fillna(0)
+    
+    distribution_comparison[f"difference {instrument}"] = (
+        distribution_comparison["predicted"]
+        - distribution_comparison["true"]
+    )
+    distribution_comparison = distribution_comparison.reindex(all_labels, fill_value=0)
+    return distribution_comparison
 
 
+
+    
+    

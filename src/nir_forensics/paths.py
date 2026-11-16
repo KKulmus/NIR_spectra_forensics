@@ -12,3 +12,7 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 FIXTURE_DIR = PROJECT_ROOT / "tests" / "fixtures"
+
+MODELS_DIR = PROJECT_ROOT / "results" / "models"
+PREDICTIONS_DIR = PROJECT_ROOT / "results" / "predictions"
+EVALUATION_DIR = PROJECT_ROOT / "results" / "evaluation"

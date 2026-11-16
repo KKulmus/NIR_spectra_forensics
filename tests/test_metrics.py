@@ -8,8 +8,14 @@ Created on Thu Oct 22 08:47:12 2026
 
 import unittest
 
-from nir_forensics.modeling.metrics import calculate_metric, calculate_confusion_matrix, calculate_classification_metrics
-from nir_forensics.modeling.metrics import calculate_fold_confusion_matrices, calculate_fold_metrics
+from nir_forensics.modeling.metrics import (calculate_metric, 
+                                            calculate_confusion_matrix, 
+                                            calculate_classification_metrics,
+                                            calculate_fold_confusion_matrices, 
+                                            calculate_fold_metrics, 
+                                            compare_class_distributions, 
+                                            calculate_pooled_metrics)
+
 
 y_true = ["A", "A", "A","B"]
 y_pred = ["A", "A", "B","B"]
@@ -163,6 +169,70 @@ class TestMetrics(unittest.TestCase):
          
          self.assertAlmostEqual(f1[0]["Macro-F1"], 11/12)
          self.assertAlmostEqual(f1[0]["Weighted-F1"], 8/9)
+         
+    def test_compare_class_distributions(self):
+        """Test relative true and predicted class distributions."""
+
+        distribution = compare_class_distributions(results, "test_instrument")
+
+        self.assertEqual(list(distribution.index), all_labels)
+
+        self.assertAlmostEqual(
+            distribution.loc["2C-B_phenethylamine-psychedelics", "true"],
+            3/18
+        )
+
+        self.assertAlmostEqual(
+            distribution.loc["2C-B_phenethylamine-psychedelics", "predicted"],
+            2/18
+        )
+
+        self.assertAlmostEqual(
+            distribution.loc["2C-B_phenethylamine-psychedelics",
+                            "difference test_instrument"],
+            -1/18
+        )
+
+        self.assertAlmostEqual(distribution["true"].sum(), 1.0)
+        self.assertAlmostEqual(distribution["predicted"].sum(), 1.0)
         
+        
+    def test_compare_class_distributions_missing_classes(self):
+        """Test whether missing classes are included with zero frequency."""
+
+        test_results = [{
+            "fold": 0,
+            "true_labels": ["MDMA", "MDMA"],
+            "predictions": ["MDMA", "MDMA"]
+        }]
+
+        distribution = compare_class_distributions(test_results, "test")
+
+        self.assertEqual(list(distribution.index), all_labels)
+
+        self.assertEqual(
+            distribution.loc["cocaine", "true"], 0
+        )
+
+        self.assertEqual(
+            distribution.loc["cocaine", "predicted"], 0
+        )
+        
+    def test_calculate_pooled_metrics(self):
+       """Test whether pooled Macro-F1 and Weighted-F1 are calculated
+       correctly across all folds.
+       """
+
+       f1 = calculate_pooled_metrics(results, "test_instrument", "test_model")
+
+       self.assertIsInstance(f1, dict)
+       self.assertEqual(f1["instrument"], "test_instrument")
+       self.assertEqual(f1["model_name"], "test_model")
+       self.assertIn("Macro-F1", f1)
+       self.assertIn("Weighted-F1", f1)
+
+       # Expected values calculated from all 18 pooled predictions
+       self.assertAlmostEqual(f1["Macro-F1"], 0.894444, places=4)
+       self.assertAlmostEqual(f1["Weighted-F1"], 0.882716, places=4)   
              
         
