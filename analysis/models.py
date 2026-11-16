@@ -188,40 +188,30 @@ def run_model_evaluation(instruments, model_functions):
 
     return evaluation_results
         
-# out = run_model_evaluation(
-#     instruments=["MicroNIR", "NeoSpectra", "Scio", "NIRONE"],
-#     model_names=["dummy", "rfc"]
-# )
-# df_comparison = create_model_comparison_table(out)
-# df_comparison = df_comparison.sort_values(
-#     ["instrument", "model"]
-# ).reset_index(drop=True)
-
-#dataset, train_indices, test_indices = prepare_dataset("Scio")
-#results = make_predictions(dataset, train_indices, test_indices, "Dummy", fit_dummy_classifier,  model_params=None, instrument="Scio")
-
-model_functions = {
-    "Dummy": {
-        "func": fit_dummy_classifier,
-        "params": {}
-    },
-    "RFC_default": {
-        "func": fit_random_forest_classifier,
-        "params": {}
-    },
-    "RFC_balanced": {
-        "func": fit_random_forest_classifier,
-        "params": {"class_weight": "balanced"}
+if __name__ == "__main__":
+    model_functions = {
+        "Dummy": {
+            "func": fit_dummy_classifier,
+            "params": {}
+        },
+        "RFC_default": {
+            "func": fit_random_forest_classifier,
+            "params": {}
+        },
+        "RFC_balanced": {
+            "func": fit_random_forest_classifier,
+            "params": {"class_weight": "balanced"}
+        }
     }
-}
 
-out = run_model_evaluation(
-    instruments=["MicroNIR", "NeoSpectra", "Scio", "NIRONE"],
-    model_functions=model_functions
-)
+    out = run_model_evaluation(
+        instruments=["MicroNIR", "NeoSpectra", "Scio", "NIRONE"],
+        model_functions=model_functions
+    )
 
-df_comparison = create_model_comparison_table(out)
+    df_comparison = create_model_comparison_table(out)
 
-df_comparison = df_comparison.sort_values(
-    ["instrument", "model"]
-).reset_index(drop=True)
+    df_comparison = df_comparison.sort_values(
+        ["instrument", "model"]
+    ).reset_index(drop=True)
+
