@@ -41,9 +41,9 @@ class TestModels(unittest.TestCase):
                                 }
                             }
         cls.out = run_model_evaluation(
-            instruments=["MicroNIR"],
-            model_functions=cls.model_functions
-        )
+        model_functions=cls.model_functions,
+        dataset=cls.dataset
+    )
     @classmethod
     def tearDownClass(cls):
         for result in cls.out.values():
@@ -147,7 +147,7 @@ class TestModels(unittest.TestCase):
     
             instrument, model_name = key
     
-            self.assertEqual(instrument, "MicroNIR")
+            self.assertEqual(instrument, None)
             self.assertIn(model_name, ["dummy", "rfc"])
     
             # Check result dictionary

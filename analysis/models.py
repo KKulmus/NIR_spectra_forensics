@@ -100,8 +100,8 @@ def make_predictions(dataset, train_indices, test_indices,
             joblib.dump(results, prediction_path)
     return results
 
-def run_model_evaluation(instruments, model_functions):
-    """Run model evaluation for multiple instruments and models.
+def run_model_evaluation(instruments=None, model_functions=None, dataset=None):
+    """Run model evaluation for multiple instruments or a given dataset.
 
     Args:
         instruments (list): Instruments to evaluate.
@@ -120,7 +120,9 @@ def run_model_evaluation(instruments, model_functions):
                                      "params": {"class_weight": "balanced"}
                                  }
                              }
-                            
+        dataset (pd.DataFrame, optional): Dataset for direct evaluation.
+                                          If given, instruments must be None.
+                    
 
     Returns:
         dict: Evaluation results for each instrument-model combination.
@@ -130,26 +132,45 @@ def run_model_evaluation(instruments, model_functions):
         figures: evaluation_results[("MicroNIR", "rfc")]["figures"]["confusion_matrix"]
     """
    
+    if model_functions is None:
+        raise ValueError("model_functions must be provided.")
+
+    if instruments is not None and dataset is not None:
+        raise ValueError("Only one of instruments or dataset can be given.")
+
+    if instruments is None and dataset is None:
+        raise ValueError("Either instruments or dataset must be given.")
+
     evaluation_results = {}
 
+    if dataset is not None:
+        instruments = [None]
+        datasets = {None: prepare_dataset(dataset=dataset)}
+    else:
+        datasets = {
+            instrument: prepare_dataset(instrument=instrument)
+            for instrument in instruments
+        }
+
     for instrument in instruments:
-        
-        dataset, train_indices, test_indices = prepare_dataset(instrument)
+
+        current_dataset, train_indices, test_indices = datasets[instrument]
 
         for model_name, model_config in model_functions.items():
             model_func = model_config["func"]
             model_params = model_config["params"]
-            predictions_dir = PREDICTIONS_DIR / instrument / model_name
-           
-            
-            prediction_path = predictions_dir / "all_folds.pkl"
-            if prediction_path.exists():
+
+            if instrument is not None:
+                predictions_dir = PREDICTIONS_DIR / instrument / model_name
+                prediction_path = predictions_dir / "all_folds.pkl"
+            else:
+                prediction_path = None
+
+            if prediction_path is not None and prediction_path.exists():
                 results = joblib.load(prediction_path)
-                
-            else: 
-            # Generate fold-wise predictions
+            else:
                 results = make_predictions(
-                    dataset,
+                    current_dataset,
                     train_indices,
                     test_indices,
                     model_name,
@@ -158,25 +179,23 @@ def run_model_evaluation(instruments, model_functions):
                     instrument=instrument
                 )
 
-            # Calculate evaluation metrics
             model_comparison = create_model_comparison(
                 results,
                 instrument,
                 model_name
             )
 
-            # Calculate pooled confusion matrix
             conf_matrix = calculate_confusion_matrix(results)
 
-            # Plot confusion matrix
             fig_cm = plot_confusion_matrix_heatmap(
                 conf_matrix,
-                instrument
+                instrument or "Test dataset"
             )
 
-            fig_cm.axes[0].set_title(f"{instrument} – {model_name}")
+            fig_cm.axes[0].set_title(
+                f"{instrument or 'Test dataset'} – {model_name}"
+            )
 
-            # Collect all results
             evaluation_results[(instrument, model_name)] = {
                 "metrics": model_comparison,
                 "predictions": results,
@@ -187,7 +206,8 @@ def run_model_evaluation(instruments, model_functions):
             }
 
     return evaluation_results
-        
+
+
 if __name__ == "__main__":
     model_functions = {
         "Dummy": {
